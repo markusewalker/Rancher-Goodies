@@ -3,7 +3,7 @@
 ### Description
 Bash script to upgrade a Rancher server on the designated client machine. Find the usage below:
 
-![Usage](https://github.com/markusewalker/Rancher-Goodies/blob/main/upgrade/docker/usage.jpg)
+![Usage](https://github.com/markusewalker/Rancher-Goodies/blob/main/upgrade/docker/upgrade.jpg)
 
 You are able to use this script in conjuction with `rollback.sh` for a scenario of upgrading/rolling back. If you do this, you will need to sure that you DO NOT modify any of the paths in the `upgrade.sh` and `rollback.sh` code.
 
