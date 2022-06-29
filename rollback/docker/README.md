@@ -3,7 +3,7 @@
 ### Description
 Bash script to rollback a Rancher server on the designated client machine. Find the usage below:
 
-![Usage](https://github.com/markusewalker/Rancher-Goodies/blob/main/rollback/docker/usage.jpg)
+![Usage](https://github.com/markusewalker/Rancher-Goodies/blob/main/rollback/docker/rollback.jpg)
 
 This scirpt assumes that you utilized `upgrade.sh` prior to using this script. This script is meant to be used in the scenario of an immediate upgrade/rollback sceneario. As such, you may have paths that do not match what is in `rollback.sh`.
 
