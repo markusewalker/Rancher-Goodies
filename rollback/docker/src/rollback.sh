@@ -30,7 +30,6 @@ running. You will need to either be the root user or the user that installed Ran
 
 following information:
 
-    - Current version of Rancher
     - Version you wish to rollback to
 
 Additionally, this script assumes that you are using a self-signed certificate.
