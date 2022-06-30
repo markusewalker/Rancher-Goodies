@@ -16,7 +16,9 @@ rollbackRancher() {
     docker run --volumes-from "${DATA_CONTAINER}" -v ${PWD}:/backup busybox sh -c "rm ${VARLIB}/* -rf && tar zxvf ${BACKUP}"
 
     echo -e "\nStarting Rancher..."
-    docker run -d --volumes-from "${DATA_CONTAINER}" --restart=unless-stopped -p 80:80 -p 443:443 --privileged "${ROLLBACK_IMAGE_TAG}"
+    docker run -d --volumes-from "${DATA_CONTAINER}" --restart=unless-stopped \
+                                                     -p 80:80 -p 443:443 \
+                                                     --privileged "${ROLLBACK_IMAGE_TAG}"
 }
 
 usage() {
@@ -30,6 +32,7 @@ running. You will need to either be the root user or the user that installed Ran
 
 following information:
 
+    - Current version of Rancher
     - Version you wish to rollback to
 
 Additionally, this script assumes that you are using a self-signed certificate.
@@ -48,6 +51,7 @@ EXAMPLES OF USAGE:
 EOF
 }
 
+# Get flags to run the script silently.
 while getopts "h" opt; do
 	case ${opt} in
 		h)

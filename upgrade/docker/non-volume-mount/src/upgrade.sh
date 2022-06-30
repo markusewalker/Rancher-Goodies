@@ -17,7 +17,9 @@ upgradeRancher() {
     docker pull "${NEW_IMAGE_TAG}"
 
     echo -e "\nStarting Rancher..."
-    docker run -d --volumes-from "${DATA_CONTAINER}" --restart=unless-stopped -p 80:80 -p 443:443 --privileged "${NEW_IMAGE_TAG}"
+    docker run -d --volumes-from "${DATA_CONTAINER}" --restart=unless-stopped \
+                                                     -p 80:80 -p 443:443 \
+                                                     --privileged "${NEW_IMAGE_TAG}"
 }
 
 usage() {
@@ -50,6 +52,7 @@ EXAMPLES OF USAGE:
 EOF
 }
 
+# Get flags to run the script silently.
 while getopts "h" opt; do
 	case ${opt} in
 		h)
@@ -66,7 +69,7 @@ Main() {
     echo -e "-----------------------------------------------\x1B[0m"
     
     read -p "Enter in the version of the current Rancher (i.e. v2.6.5): " OLD_VERSION
-    read -p "Enter in the version of Rancher to upgrade to (i.e. v2.6.6-rc2): " NEW_VERSION
+    read -p "Enter in the version of Rancher to upgrade to (i.e. v2.6.6): " NEW_VERSION
 
     export RANCHER="rancher/rancher"
     export OLD_IMAGE_TAG="${RANCHER}:${OLD_VERSION}"

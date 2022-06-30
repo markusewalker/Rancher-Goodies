@@ -1,9 +1,9 @@
 #!/usr/bin/bash
 
 # Authored By   : Markus Walker
-# Date Modified : 4/12/22
+# Date Modified : 6/30/22
 
-# Description   : To deploy Rancher using Docker.
+# Description   : To deploy Rancher using Docker with volume mounts.
 
 installDebianDocker() {
     echo -e "\nInstalling Docker..."
@@ -100,11 +100,17 @@ suseK8s() {
 }
 
 startRancher() {
-    read -p "Enter in the name of the password you wish to use for Rancher: " UI_PASSWORD
+    read -p "Enter in the password to login to Rancher: " UI_PASSWORD
+    read -p "Enter in the version of Rancher you wish to install (i.e v2.6.5): " RVERSION
+    
     echo -e "\nStarting Rancher up..."
-
-    export RVERSION="v2.6-head"
-    sudo docker run -d -e "CATTLE_BOOTSTRAP_PASSWORD=${UI_PASSWORD}" --restart unless-stopped -p 80:80 -p 443:443 --privileged "rancher/rancher:${RVERSION}"
+    sudo docker run -d -e "CATTLE_BOOTSTRAP_PASSWORD=${UI_PASSWORD}" --restart unless-stopped \
+                                                                     -v /opt/rancher/var/lib/rancher:/var/lib/rancher \
+                                                                     -v /opt/rancher/var/log:/var/log \
+                                                                     -v /opt/rancher/var/lib/cni:/var/lib/cni \
+                                                                     -v /opt/rancher/var/lib/kubelet:/var/lib/kubelet \
+                                                                     -p 80:80 -p 443:443 \
+                                                                     --privileged "rancher/rancher:${RVERSION}"
 }
 
 usage() {
@@ -112,7 +118,9 @@ usage() {
 
 $(basename "$0")
 
-This script will deploy Rancher API Server to a machine using Docker. You need to be the user that will deploy Rancher.
+This script will deploy Rancher API Server with volume mounts to a machine using Docker. You need 
+
+to be the user that will deploy Rancher.
 
 USAGE: % ./$(basename "$0") [options]
 
@@ -128,6 +136,7 @@ EXAMPLES OF USAGE:
 EOF
 }
 
+# Get flags to run the script silently.
 while getopts "h" opt; do
 	case ${opt} in
 		h)
@@ -140,8 +149,8 @@ Main() {
     echo -e "\x1B[96m=================================================="
     echo -e "\tSetup Rancher using Docker"
     echo -e "=================================================="
-    echo -e "This script will deploy Rancher using Docker."
-    echo -e "---------------------------------------------\x1B[0m"
+    echo -e "This script will deploy Rancher using Docker using volume mounts."
+    echo -e "------------------------------------------------------------------\x1B[0m"
 
     . /etc/os-release
 
