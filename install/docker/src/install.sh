@@ -11,7 +11,6 @@ installDebianDocker() {
 
     echo -e "\nSetting sudo privileges to root user and Rancher user..."
     sudo usermod -aG docker root
-    sudo usermod -aG docker linux
 }
 
 installFedoraDocker() {
@@ -25,7 +24,6 @@ installFedoraDocker() {
 
     echo -e "\nSetting sudo privileges to root user and Rancher user..."
     sudo usermod -aG docker root
-    sudo usermod -aG docker linux
 }
 
 installRockyDocker() {
@@ -39,7 +37,6 @@ installRockyDocker() {
 
     echo -e "\nSetting sudo privileges to root user and Rancher user..."
     sudo usermod -aG docker root
-    sudo usermod -aG docker linux
 }
 
 installSUSEDocker() {
@@ -53,7 +50,6 @@ installSUSEDocker() {
     sudo zypper install -y docker
     sudo systemctl enable docker
     sudo usermod -G docker -a root
-    sudo usermod -G docker -a linux
     sudo systemctl restart docker
 }
 
