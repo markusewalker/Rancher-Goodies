@@ -63,7 +63,7 @@ Main() {
     echo -e "\tUpgrade Rancher using Docker"
     echo -e "=================================================="
     echo -e "This script will upgrade Rancher using Docker."
-    echo -e "---------------------------------------------\x1B[0m"
+    echo -e "-----------------------------------------------\x1B[0m"
     
     read -p "Enter in the version of the current Rancher (i.e. v2.6.5): " OLD_VERSION
     read -p "Enter in the version of Rancher to upgrade to (i.e. v2.6.6-rc2): " NEW_VERSION
@@ -71,7 +71,7 @@ Main() {
     export RANCHER="rancher/rancher"
     export OLD_IMAGE_TAG="${RANCHER}:${OLD_VERSION}"
     export NEW_IMAGE_TAG="${RANCHER}:${NEW_VERSION}"
-    export CONTAINER_ID=`docker ps | grep "${IMAGE_NAME}" | awk '{ print $1 }'`
+    export CONTAINER_ID=`docker ps | awk 'NR > 1 {print $1}'`
     export DATA_CONTAINER="rancher-data"
     export VARLIB="/var/lib/rancher"
     export BACKUP="/backup/${DATA_CONTAINER}-${OLD_VERSION}.tar.gz"

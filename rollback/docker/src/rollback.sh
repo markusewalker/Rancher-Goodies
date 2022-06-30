@@ -62,7 +62,7 @@ Main() {
     echo -e "\tRollback Rancher using Docker"
     echo -e "=================================================="
     echo -e "This script will rollback Rancher using Docker."
-    echo -e "---------------------------------------------\x1B[0m"
+    echo -e "-----------------------------------------------\x1B[0m"
     
     read -p "Enter in the version of Rancher to rollback to (i.e. v2.6.5): " ROLLBACK_VERSION
 
