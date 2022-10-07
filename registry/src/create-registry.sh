@@ -59,7 +59,7 @@ saveAndLoadImages() {
     ./rancher-save-images.sh --image-list ./rancher-images.txt
 
     echo -e "\nLoading the images to the "${REGISTRY_NAME}"..."
-    ./rancher-load-images.sh --image-list ./rancher-images.txt --registry "${REGISTRY_NAME}"
+    ./rancher-load-images.sh --image-list ./rancher-images.txt --registry "${HOST}"
 }
 
 usage() {
