@@ -3,7 +3,7 @@
 ### Description
 Bash script to create a private registry using self-signed certificates and Docker. Once done, Rancher images will be pulled and pushed to the created private registry.
 
-![Usage](https://github.com/markusewalker/Rancher-Goodies/blob/main/registry/registry.jpg)
+![Usage](https://github.com/markusewalker/Rancher-Goodies/blob/main/registry/local/registry.jpg)
 
 As mentioned in the above usage, this script requires that the tools `docker` and `htpasswd` are already installed on the client machine.
 
