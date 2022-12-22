@@ -9,7 +9,7 @@ setupRKE() {
 
     echo -e "\nRenaming RKE CLI..."
     mv rke_${OS}-${ARCH} rke
-	chmod +x rke
+    chmod +x rke
 
     echo -e "\nMoving RKE CLI to /usr/local/bin..."
     sudo mv rke /usr/local/bin
