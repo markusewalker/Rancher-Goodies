@@ -28,16 +28,24 @@ setupKubelet() {
 runRKE() {
     echo -e "\nCreating cluster.yml file..."
     cat << EOF >> cluster.yml
-ssh_key_path: ${SSH_PATH}
 kubernetes_version: ${KUBERNETES_VERSION}
 nodes:
-  - address: ${NODE1}
+  - address: ${NODE1_PUBLIC}
+    port: ${PORT}
+    internal_address: ${NODE1_PRIVATE}
+    ssh_key_path: ${SSH_PATH_NODE1}
     user: ${USER}
     role: [etcd, controlplane,worker]
-  - address: ${NODE2}
+  - address: ${NODE2_PUBLIC}
+    port: ${PORT}
+    internal_address: ${NODE2_PRIVATE}
+    ssh_key_path: ${SSH_PATH_NODE2}
     user: ${USER}
     role: [etcd, controlplane,worker]
-  - address: ${NODE3}
+  - address: ${NODE3_PUBLIC}
+    port: ${PORT}
+    internal_address: ${NODE3_PRIVATE}
+    ssh_key_path: ${SSH_PATH_NODE3}
     user: ${USER}
     role: [etcd, controlplane,worker]
 EOF
@@ -61,15 +69,13 @@ Setup an RKE1 cluster with 3 nodes. This script assumes you have the following i
     - Docker
     - SSH
 
-The script will install RKE CLI and kubectl on the machine you run the script from.
-
 You will need to provide the following information before running the script:
 
-    - SSH Key Path
+    - SSH Key Path for each node
     - Kubernetes Version
-    - Node1 Public IP Address
-    - Node2 Public IP Address
-    - Node3 Public IP Address
+    - Node1 Public/Private IP Address
+    - Node2 Public/Private IP Address
+    - Node3 Public/Private IP Address
     - User for each node (should be the same)
 
 USAGE: % ./$(basename "$0") [options]
@@ -90,11 +96,11 @@ EOF
 while getopts "h" opt; do
 	case ${opt} in
 		h)
-                	usage
-                	exit 0;;
+			usage
+		     	exit 0;;
 		*)
-                	echo "Invalid option. Valid option(s) are [-h]." 2>&1
-                	exit 1;;
+		     	echo "Invalid option. Valid option(s) are [-h]." 2>&1
+		     	exit 1;;
 	esac
 done
 
@@ -104,15 +110,21 @@ Main() {
 	echo -e "====================================\x1B[0m\n"
 
     	export OS=`uname -s | awk '{print tolower($0)}'`
-    	export VERSION=""
+	export VERSION=""
     	export ARCH="amd64"
-    	export SSH_PATH=""
+    	export USER="ubuntu"
+    	export PORT=22
+    	export SSH_PATH_NODE1=""
+    	export SSH_PATH_NODE2=""
+    	export SSH_PATH_NODE3=""
     	export KUBERNETES_VERSION=""
-    	export NODE1=""
-    	export NODE2=""
-    	export NODE3=""
-    	export USER=""
-
+    	export NODE1_PUBLIC=""
+    	export NODE1_PRIVATE=""
+    	export NODE2_PUBLIC=""
+    	export NODE2_PRIVATE=""
+    	export NODE3_PUBLIC=""
+    	export NODE3_PRIVATE=""
+   
     	setupRKE
     	setupKubelet
     	runRKE
