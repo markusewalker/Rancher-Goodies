@@ -37,5 +37,5 @@ bats test.bats
 ../test/bats/bin/bats test.bats
 ```
 
-![BATS Testing Result](https://github.com/markusewalker/Rancher-Goodies/blob/main/rollback/bats/rollback.jpg)
+![BATS Testing Result](https://github.com/markusewalker/Rancher-Goodies/blob/main/rollback/docker/bats.jpg)
 
