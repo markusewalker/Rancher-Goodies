@@ -71,8 +71,8 @@ Main() {
     echo -e "This script will upgrade Rancher using Docker."
     echo -e "-----------------------------------------------\x1B[0m"
 
-    export OLD_VERSION="v2.7.0"
-    export NEW_VERSION="v2.7.1"
+    export OLD_VERSION=""
+    export NEW_VERSION=""
     export RANCHER="rancher/rancher"
     export OLD_IMAGE_TAG="${RANCHER}:${OLD_VERSION}"
     export NEW_IMAGE_TAG="${RANCHER}:${NEW_VERSION}"

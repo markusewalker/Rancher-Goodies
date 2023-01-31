@@ -15,26 +15,8 @@ setup() {
     run rollback.sh
 }
 
-@test "verify helm is installed" {
-    helm version
-    RESULT=$?
-    [ "${RESULT}" -eq 0 ]
-}
-
-@test "verify kubectl is installed" {
-    kubectl
-    RESULT=$?
-    [ "${RESULT}" -eq 0 ]
-}
-
-@test "verify docker is installed" {
-    docker version
-    RESULT=$?
-    [ "${RESULT}" -eq 0 ]
-}
-
-@test "verify Rancher is running" {
-    kubectl -n cattle-system get deploy rancher
+@test "verify Rancher container exists" {
+    docker ps | grep rancher
     RESULT=$?
     [ "${RESULT}" -eq 0 ]
 }
