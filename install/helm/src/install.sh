@@ -1,22 +1,17 @@
 #!/usr/bin/bash
 
 # Authored By   : Markus Walker
-# Date Modified : 7/14/22
+# Date Modified : 1/31/23
 
 # Description   : To deploy Rancher on using Helm.
-
-if [[ $(id -u) -ne 0 ]];
-then
-   echo "ERROR. Run script as the root user!" 2>&1
-   exit 1
-fi
 
 installDebianDocker() {
     echo -e "\nInstalling Docker..."
     curl https://releases.rancher.com/install-docker/20.10.sh | sh
 
-    echo -e "\nSetting sudo privileges to root user..."
+    echo -e "\nSetting sudo privileges to root user and Rancher user..."
     sudo usermod -aG docker root
+    sudo usermod -aG docker $(whoami)
 }
 
 installFedoraDocker() {
@@ -28,8 +23,22 @@ installFedoraDocker() {
     sudo systemctl enable docker
     sudo systemctl start docker
 
-    echo -e "\nSetting sudo privileges to root user..."
+    echo -e "\nSetting sudo privileges to root user and Rancher user..."
     sudo usermod -aG docker root
+}
+
+installRockyDocker() {
+    echo -e "\nInstalling Docker..."
+    sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+    sudo dnf update -y
+    sudo dnf install -y docker-ce docker-ce-cli containerd.io
+
+    sudo systemctl enable docker
+    sudo systemctl start docker
+
+    echo -e "\nSetting sudo privileges to root user and Rancher user..."
+    sudo usermod -aG docker root
+    sudo usermod -aG docker $(whoami)
 }
 
 installSUSEDocker() {
@@ -38,57 +47,26 @@ installSUSEDocker() {
     sudo zypper ref -s
 
     echo -e "\nInstalling Docker..."
-    sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:containers/openSUSE_Leap_15.3/Virtualization:containers.repo
-    sudo zypper ref -s
-    sudo zypper install -y docker
+    if [[ "${ID}" == "opensuse-leap" ]]; then
+        sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:containers/openSUSE_Leap_15.4/Virtualization:containers.repo
+        sudo zypper ref -s
+        sudo zypper install -y docker
+    else [[ "${ID}" == "sles" ]]
+        sudo zypper addrepo https://download.docker.com/linux/sles/docker-ce.repo
+        sudo zypper install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    fi
+
     sudo systemctl enable docker
     sudo usermod -G docker -a root
+    sudo usermod -aG docker $(whoami)
     sudo systemctl restart docker
 }
 
-debianK8s() {
-    echo -e "\nInstalling required packages..."
-    sudo apt-get update
-    sudo apt-get install -y apt-transport-https ca-certificates curl
-
-    echo -e "\nDownloading Google Cloud public signing key..."
-    sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-
-    echo -e "\nAdding K8s repoistory..."
-    echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-
-    echo -e "\nInstalling kubelet, kubeadm, kubectl..."
-    sudo apt-get update
-    sudo apt-get install -y kubelet kubeadm kubectl
-    sudo apt-mark hold kubelet kubeadm kubectl
-}
-
-fedoraK8s() {
-    echo -e "\nAdding K8s repoistory..."
-    cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-exclude=kubelet kubeadm kubectl
-EOF
-
-    echo -e "\nSetting SELinux to permissive mode..."
-    sudo setenforce 0
-    sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
-
-    echo -e "\nInstall kubelet, kubeadm, kubectl..."
-    sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
-    sudo systemctl enable --now kubelet
-}
-
-suseK8s() {
+setupK8s() {
     echo -e "\nInstalling kubectl..."
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
     sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    mkdir -p ~/.kube
     rm kubectl
 }
 
@@ -111,10 +89,11 @@ setupPreqs() {
 
     echo -e "\nCopying over kubeconfig file..."
     mkdir -p $HOME/.kube
-    cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
+    sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) -R $HOME/.kube/config
 
     echo -e "\nAdding Helm chart repo..."
-    helm repo add ${REPO} https://releases.rancher.com/server-charts/stable
+    helm repo add ${REPO} https://releases.rancher.com/server-charts/${TYPE}
 
     echo -e "\nCreating cattle-system namespace..."
     kubectl create ns cattle-system
@@ -130,8 +109,6 @@ setupPreqs() {
 }
 
 installRancher() {
-    read -p "Enter in the password to login to Rancher: " UI_PASSWORD
-
     echo -e "\nInstalling Rancher..."
     helm install rancher $REPO/rancher --namespace cattle-system \
                                        --set hostname=$NAME \
@@ -180,22 +157,19 @@ Main() {
     echo -e "This script will deploy Rancher using Helm."
     echo -e "---------------------------------------------\x1B[0m"
 
-    export REPO="rancher-stable"
-    read -p "Enter in the FQDN of your client machine: " NAME
+    export REPO="rancher-latest"
+    export TYPE="latest"
+    export NAME="ec2-18-191-140-215.us-east-2.compute.amazonaws.com"
+    export UI_PASSWORD="testingrancherout"
 
     . /etc/os-release
 
-    if [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]]; then
-        installDebianDocker
-        debianK8s
-    elif [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]]; then
-        installFedoraDocker
-        fedoraK8s
-    elif [[ "${ID}" == "opensuse-leap" ]]; then
-        installSUSEDocker
-        suseK8s
-    fi
+    [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && installDebianDocker
+    [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && installFedoraDocker
+    [[ "${ID}" == "rocky" ]] && installRockyDocker
+    [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && installSUSEDocker
     
+    setupK8s
     installHelm
     setupPreqs
     installRancher

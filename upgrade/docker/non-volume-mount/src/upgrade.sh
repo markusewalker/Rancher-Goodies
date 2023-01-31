@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 # Authored By   : Markus Walker
-# Date Modified : 6/29/22
+# Date Modified : 1/31/23
 
 # Description   : To upgrade Rancher using Docker.
 
@@ -52,7 +52,6 @@ EXAMPLES OF USAGE:
 EOF
 }
 
-# Get flags to run the script silently.
 while getopts "h" opt; do
 	case ${opt} in
 		h)
@@ -67,10 +66,9 @@ Main() {
     echo -e "=================================================="
     echo -e "This script will upgrade Rancher using Docker."
     echo -e "-----------------------------------------------\x1B[0m"
-    
-    read -p "Enter in the version of the current Rancher (i.e. v2.6.5): " OLD_VERSION
-    read -p "Enter in the version of Rancher to upgrade to (i.e. v2.6.6): " NEW_VERSION
 
+    export OLD_VERSION="v2.7.0"
+    export NEW_VERSION="v2.7.1"
     export RANCHER="rancher/rancher"
     export OLD_IMAGE_TAG="${RANCHER}:${OLD_VERSION}"
     export NEW_IMAGE_TAG="${RANCHER}:${NEW_VERSION}"
