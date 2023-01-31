@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 # Authored By   : Markus Walker
-# Date Modified : 6/29/22
+# Date Modified : 1/31/23
 
 # Description   : To rollback Rancher using Docker.
 
@@ -51,7 +51,6 @@ EXAMPLES OF USAGE:
 EOF
 }
 
-# Get flags to run the script silently.
 while getopts "h" opt; do
 	case ${opt} in
 		h)
@@ -67,8 +66,7 @@ Main() {
     echo -e "This script will rollback Rancher using Docker."
     echo -e "-----------------------------------------------\x1B[0m"
     
-    read -p "Enter in the version of Rancher to rollback to (i.e. v2.6.5): " ROLLBACK_VERSION
-
+    export ROLLBACK_VERSION="v2.7.0"
     export RANCHER="rancher/rancher"
     export ROLLBACK_IMAGE_TAG="${RANCHER}:$ROLLBACK_VERSION"
     export CONTAINER_ID=`docker ps | awk 'NR > 1 {print $1}'`
