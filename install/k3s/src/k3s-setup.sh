@@ -30,13 +30,13 @@ setupAgentNodes() {
 	echo -e "\nSetting up K3s agent node 1..."
 	sudo ssh -i "${SSH_KEY}" "${USER}"@"${AGENT_NODE1}" "curl -sfL https://get.k3s.io | K3S_URL=https://${SERVER_NODE}:6443 K3S_TOKEN=${TOKEN} sh -"
 	
-	echo -e "\nValidating agent 1 was added..."
+	echo -e "\nValidating agent node 1 was added..."
 	kubectl get nodes
 	
 	echo -e "\nSetting up K3s agent node 2..."
 	sudo ssh -i "${SSH_KEY}" "${USER}"@"${AGENT_NODE2}" "curl -sfL https://get.k3s.io | K3S_URL=https://${SERVER_NODE}:6443 K3S_TOKEN=${TOKEN} sh -"
 	
-	echo -e "\nValidating agent 2 was added..."
+	echo -e "\nValidating agent node 2 was added..."
 	kubectl get nodes
 	
 	echo -e "\nLabeling agent nodes as worker nodes..."
@@ -52,7 +52,7 @@ $(basename "$0")
 Setup an K3s cluster with 3 nodes. This script assumes you have met the following prerequisites:
 
 	* SSH (requires private key)
-	* Sudo access on target machines
+	* Sudo access on client machine
 	* User is the same on all target machines
 
 USAGE: % ./$(basename "$0") [options]
