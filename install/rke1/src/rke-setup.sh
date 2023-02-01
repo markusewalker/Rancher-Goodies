@@ -66,17 +66,17 @@ $(basename "$0")
 
 Setup an RKE1 cluster with 3 nodes. This script assumes you have the following installed on each of the targeted machines:
 
-    - Docker
-    - SSH
+    * Docker
+    * SSH
 
 You will need to provide the following information before running the script:
 
-    - SSH Key Path for each node
-    - Kubernetes Version
-    - Node1 Public/Private IP Address
-    - Node2 Public/Private IP Address
-    - Node3 Public/Private IP Address
-    - User for each node (should be the same)
+    * SSH Key Path for each node
+    * Kubernetes Version
+    * Node1 Public/Private IP Address
+    * Node2 Public/Private IP Address
+    * Node3 Public/Private IP Address
+    * User for each node (should be the same)
 
 USAGE: % ./$(basename "$0") [options]
 
@@ -85,7 +85,7 @@ OPTIONS:
 
 EXAMPLES:
 
-* Run script interactively
+* Run script
 
 	% ./$(basename "$0")
 
