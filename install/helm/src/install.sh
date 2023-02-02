@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 # Authored By   : Markus Walker
-# Date Modified : 1/31/23
+# Date Modified : 2/2/23
 
 # Description   : To deploy Rancher on using Helm.
 
@@ -11,7 +11,7 @@ installDebianDocker() {
 
     echo -e "\nSetting sudo privileges to root user and Rancher user..."
     sudo usermod -aG docker root
-    sudo usermod -aG docker $(whoami)
+    sudo usermod -aG docker ${USER}
 }
 
 installFedoraDocker() {
@@ -25,6 +25,7 @@ installFedoraDocker() {
 
     echo -e "\nSetting sudo privileges to root user and Rancher user..."
     sudo usermod -aG docker root
+    sudo usermod -aG docker ${USER}
 }
 
 installRockyDocker() {
@@ -38,7 +39,7 @@ installRockyDocker() {
 
     echo -e "\nSetting sudo privileges to root user and Rancher user..."
     sudo usermod -aG docker root
-    sudo usermod -aG docker $(whoami)
+    sudo usermod -aG docker ${USER}
 }
 
 installSUSEDocker() {
@@ -47,19 +48,19 @@ installSUSEDocker() {
     sudo zypper ref -s
 
     echo -e "\nInstalling Docker..."
-    if [[ "${ID}" == "opensuse-leap" ]]; then
-        sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:containers/openSUSE_Leap_15.4/Virtualization:containers.repo
-        sudo zypper ref -s
-        sudo zypper install -y docker
-    else [[ "${ID}" == "sles" ]]
-        sudo zypper addrepo https://download.docker.com/linux/sles/docker-ce.repo
-        sudo zypper install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-    fi
+    sudo update-ca-certificates
+    sudo zypper ref -s
+
+    [[ "${ID}" == "opensuse-leap" ]] && sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:containers/openSUSE_Leap_15.4/Virtualization:containers.repo
+    [[ "${ID}" == "sles" ]] && sudo zypper addrepo https://download.opensuse.org/repositories/security:SELinux/15.4/security:SELinux.repo
+    
+    sudo zypper ref -s
+    sudo zypper install -y docker
 
     sudo systemctl enable docker
     sudo usermod -G docker -a root
-    sudo usermod -aG docker $(whoami)
-    sudo systemctl restart docker
+    sudo usermod -aG docker ${USER}
+    sudo systemctl start docker
 }
 
 setupK8s() {
@@ -157,10 +158,11 @@ Main() {
     echo -e "This script will deploy Rancher using Helm."
     echo -e "---------------------------------------------\x1B[0m"
 
-    export REPO="rancher-latest"
-    export TYPE="latest"
-    export NAME="ec2-18-191-140-215.us-east-2.compute.amazonaws.com"
-    export UI_PASSWORD="testingrancherout"
+    export REPO=""
+    export TYPE=""
+    export NAME=""
+    export USER=""
+    export UI_PASSWORD=""
 
     . /etc/os-release
 

@@ -110,7 +110,7 @@ Main() {
 	echo -e "====================================\x1B[0m\n"
 
     	export OS=`uname -s | awk '{print tolower($0)}'`
-	export VERSION=""
+        export VERSION=""
     	export ARCH="amd64"
     	export USER="ubuntu"
     	export PORT=22

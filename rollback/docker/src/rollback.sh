@@ -66,7 +66,7 @@ Main() {
     echo -e "This script will rollback Rancher using Docker."
     echo -e "-----------------------------------------------\x1B[0m"
     
-    export ROLLBACK_VERSION="v2.7.0"
+    export ROLLBACK_VERSION=""
     export RANCHER="rancher/rancher"
     export ROLLBACK_IMAGE_TAG="${RANCHER}:$ROLLBACK_VERSION"
     export CONTAINER_ID=`docker ps | awk 'NR > 1 {print $1}'`
