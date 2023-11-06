@@ -94,13 +94,13 @@ EOF
 }
 
 while getopts "h" opt; do
-	case ${opt} in
-		h)
-			usage
-		     	exit 0;;
-		*)
-		     	echo "Invalid option. Valid option(s) are [-h]." 2>&1
-		     	exit 1;;
+    case ${opt} in
+        h)
+            usage
+            exit 0;;
+        *)
+            echo "Invalid option. Valid option(s) are [-h]." 2>&1
+            exit 1;;
 	esac
 done
 
@@ -108,26 +108,26 @@ Main() {
 	echo -e "\x1B[96m===================================="
 	echo -e "\tRKE1 Cluster Setup"
 	echo -e "====================================\x1B[0m\n"
-
-    	export OS=`uname -s | awk '{print tolower($0)}'`
-        export VERSION=""
-    	export ARCH="amd64"
-    	export USER="ubuntu"
-    	export PORT=22
-    	export SSH_PATH_NODE1=""
-    	export SSH_PATH_NODE2=""
-    	export SSH_PATH_NODE3=""
-    	export KUBERNETES_VERSION=""
-    	export NODE1_PUBLIC=""
-    	export NODE1_PRIVATE=""
-    	export NODE2_PUBLIC=""
-    	export NODE2_PRIVATE=""
-    	export NODE3_PUBLIC=""
-    	export NODE3_PRIVATE=""
-   
-    	setupRKE
-    	setupKubectl
-    	runRKE
+    
+    export OS=`uname -s | awk '{print tolower($0)}'`
+    export VERSION=""
+    export ARCH="amd64"
+    export USER=""
+    export PORT=22
+    export SSH_PATH_NODE1=""
+    export SSH_PATH_NODE2=""
+    export SSH_PATH_NODE3=""
+    export KUBERNETES_VERSION=""
+    export NODE1_PUBLIC=""
+    export NODE1_PRIVATE=""
+    export NODE2_PUBLIC=""
+    export NODE2_PRIVATE=""
+    export NODE3_PUBLIC=""
+    export NODE3_PRIVATE=""
+    
+    setupRKE
+    setupKubectl
+    runRKE
 }
 
 Main "$@"

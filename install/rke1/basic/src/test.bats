@@ -8,15 +8,15 @@ setup() {
 }
 
 @test "run script's usage" {
-    run rke-setup.sh -h
+    run setup.sh -h
 }
 
 @test "run script with invalid argument" {
-    run rke-setup.sh -a
+    run setup.sh -a
 }
 
 @test "run script" {
-    run rke-setup.sh
+    run setup.sh
 }
 
 @test "verify RKE CLI is installed" {

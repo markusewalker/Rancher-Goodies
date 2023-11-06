@@ -103,7 +103,7 @@ setupPreqs() {
     kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.crds.yaml
     helm repo add jetstack https://charts.jetstack.io
     helm repo update
-    helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.7.1
+    helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version ${CERT_MANAGER_VERSION}
 
     echo -e "\nVerifying cert-manager has been properly setup..."
     kubectl get pods --namespace cert-manager  
@@ -163,6 +163,7 @@ Main() {
     export NAME=""
     export USER=""
     export UI_PASSWORD=""
+    export CERT_MANAGER_VERSION=""
 
     . /etc/os-release
 
