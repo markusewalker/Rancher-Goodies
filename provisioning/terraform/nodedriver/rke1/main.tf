@@ -2,7 +2,7 @@ terraform {
   required_providers {
     rancher2 = {
       source  = "rancher/rancher2"
-      version = "latest"
+      version = "3.2.0"
     }
   }
 }
@@ -17,7 +17,8 @@ provider "rancher2" {
 # CREATE RKE1 CLUSTER
 ########################
 resource "rancher2_cluster" "cluster" {
-  name = var.cluster_name
+  name                                                       = var.cluster_name
+  default_pod_security_admission_configuration_template_name = var.default_pod_security_admission_configuration_template_name
   rke_config {
     kubernetes_version = var.kubernetes_version
     network {

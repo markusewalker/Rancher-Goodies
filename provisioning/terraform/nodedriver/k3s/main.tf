@@ -2,7 +2,7 @@ terraform {
   required_providers {
     rancher2 = {
       source  = "rancher/rancher2"
-      version = "latest"
+      version = "3.2.0"
     }
   }
 }
@@ -43,10 +43,11 @@ resource "rancher2_machine_config_v2" "machine_config" {
 # CREATE CLUSTER
 ########################
 resource "rancher2_cluster_v2" "cluster" {
-  name                                     = var.cluster_name
-  kubernetes_version                       = var.kubernetes_version
-  enable_network_policy                    = false
-  default_cluster_role_for_project_members = var.default_cluster_role_for_project_members
+  name                                                       = var.cluster_name
+  kubernetes_version                                         = var.kubernetes_version
+  enable_network_policy                                      = false
+  default_cluster_role_for_project_members                   = var.default_cluster_role_for_project_members
+  default_pod_security_admission_configuration_template_name = var.default_pod_security_admission_configuration_template_name
   rke_config {
     machine_pools {
       name                         = var.machine_pool_etcd_name

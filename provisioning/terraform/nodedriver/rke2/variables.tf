@@ -68,6 +68,11 @@ variable "default_cluster_role_for_project_members" {
   description = "Default cluster role for project members"
 }
 
+variable "default_pod_security_admission_configuration_template_name" {
+  type        = string
+  description = "Default pod security admission configuration template name"
+}
+
 variable "machine_pool_etcd_name" {
   type        = string
   description = "Machine pool etcd name"

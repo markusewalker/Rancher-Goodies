@@ -1,7 +1,7 @@
-# Provision RKE2 Node Driver Cluster - Terraform
+# Provision EKS Hosted Cluster - Terraform
 
 ### Description
-Provisioning a RKE2 node driver cluster using Terraform. Currently, AWS is the provider used in order to do this.
+Provisioning a EKS hosted cluster using Terraform.
 
 ### Getting Started
 Assuming that `terraform` is already installed on the client machine, follow the following steps:

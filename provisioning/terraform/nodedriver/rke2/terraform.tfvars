@@ -1,7 +1,7 @@
 ########################
 # RANCHER VARIABLES
 ########################
-rancher_api_url            = "https://..."
+rancher_api_url            = ""
 rancher_admin_bearer_token = ""
 
 ########################
@@ -18,15 +18,16 @@ vpc_id              = ""
 zone                = "a"
 
 ########################
-# K3S VARIABLES
+# RKE2 VARIABLES
 ########################
-cluster_name                             = ""
-kubernetes_version                       = "v1.26.6+rke2r1"
-default_cluster_role_for_project_members = "user"
-machine_pool_etcd_name                   = ""
-machine_pool_etcd_quantity               = 1
-machine_pool_control_plane_name          = ""
-machine_pool_control_plane_quantity      = 1
-machine_pool_worker_name                 = ""
-machine_pool_worker_quantity             = 1
-cloud_credential_name                    = ""
+cluster_name                                               = ""
+kubernetes_version                                         = ""
+default_cluster_role_for_project_members                   = "user"
+default_pod_security_admission_configuration_template_name = ""
+machine_pool_etcd_name                                     = ""
+machine_pool_etcd_quantity                                 = 3
+machine_pool_control_plane_name                            = ""
+machine_pool_control_plane_quantity                        = 2
+machine_pool_worker_name                                   = ""
+machine_pool_worker_quantity                               = 3
+cloud_credential_name                                      = ""

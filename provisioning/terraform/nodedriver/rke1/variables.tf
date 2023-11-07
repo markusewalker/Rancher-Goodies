@@ -48,7 +48,7 @@ variable "aws_vpc_id" {
   description = "AWS VPC ID"
 }
 
-variable "aws_zone_letter" {
+variable "aws_zone" {
   type        = string
   description = "AWS zone"
 }
@@ -111,4 +111,9 @@ variable "node_hostname_prefix" {
 variable "kubernetes_version" {
   type        = string
   description = "Kubernetes version"
+}
+
+variable "default_pod_security_admission_configuration_template_name" {
+  type        = string
+  description = "Default pod security admission configuration template name"
 }
