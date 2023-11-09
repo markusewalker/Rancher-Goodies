@@ -58,52 +58,17 @@ variable "cluster_name" {
   description = "Cluster name"
 }
 
-variable "kubernetes_version" {
-  type        = string
-  description = "Kubernetes version"
-}
-
-variable "default_cluster_role_for_project_members" {
-  type        = string
-  description = "Default cluster role for project members"
-}
-
 variable "default_pod_security_admission_configuration_template_name" {
   type        = string
   description = "Default pod security admission configuration template name"
 }
 
-variable "machine_pool_etcd_name" {
+variable "kubernetes_version" {
   type        = string
-  description = "Machine pool etcd name"
+  description = "Kubernetes version"
 }
 
-variable "machine_pool_etcd_quantity" {
-  type        = number
-  description = "Machine pool etcd quantity"
-}
-
-variable "machine_pool_control_plane_name" {
+variable "network_plugin" {
   type        = string
-  description = "Machine pool control plane name"
-}
-
-variable "machine_pool_control_plane_quantity" {
-  type        = number
-  description = "Machine pool control plane quantity"
-}
-
-variable "machine_pool_worker_name" {
-  type        = string
-  description = "Machine pool worker name"
-}
-
-variable "machine_pool_worker_quantity" {
-  type        = number
-  description = "Machine pool worker quantity"
-}
-
-variable "cloud_credential_name" {
-  type        = string
-  description = "Cloud credential name"
+  description = "Network plugin"
 }

@@ -14,6 +14,7 @@ provider "aws" {
 
 resource "aws_instance" "aws_instance" {
   ami                    = var.aws_ami
+  count                  = var.aws_instance_count
   instance_type          = var.aws_instance_type
   subnet_id              = var.aws_subnet
   vpc_security_group_ids = [var.aws_security_group]
@@ -23,12 +24,12 @@ resource "aws_instance" "aws_instance" {
   }
 
   tags = {
-    Name = var.aws_prefix
+    Name = "${var.aws_prefix}-${count.index}"
   }
 
   connection {
     type        = var.ssh_connection_type
-    host        = aws_instance.aws_instance.public_ip
+    host        = self.public_ip
     user        = var.aws_user
     private_key = file(var.ssh_private_key_path)
     timeout     = var.ssh_timeout
@@ -36,7 +37,7 @@ resource "aws_instance" "aws_instance" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo docker run -d --privileged --restart=unless-stopped -p 80:80 -p 443:443 -e CATTLE_BOOTSTRAP_PASSWORD=${var.rancher_password} rancher/rancher:${var.rancher_tag_version}"
+      "${var.registration_command}"
     ]
   }
 }
