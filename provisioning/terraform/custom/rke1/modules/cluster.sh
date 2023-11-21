@@ -16,10 +16,10 @@ createCluster() {
 }
 
 registerNodes() {
-    TF_VAR_registration_command=$(terraform output cluster_registration_token | grep "node_command" | awk '{$1= ""; $2= ""; $3= ""; print $0}')
-    TF_VAR_registration_command=$(echo "${TF_VAR_registration_command}" | sed 's/-NoLogo.*//g')
-    TF_VAR_registration_command=$(echo "${TF_VAR_registration_command}" | sed 's/\"//g')
-    TF_VAR_registration_command=$(echo "${TF_VAR_registration_command}" | sed 's/ *$//g')
+    export TF_VAR_registration_command=$(terraform output cluster_registration_token | grep "node_command" | awk '{$1= ""; $2= ""; $3= ""; print $0}')
+    export TF_VAR_registration_command=$(echo "${TF_VAR_registration_command}" | sed 's/-NoLogo.*//g')
+    export TF_VAR_registration_command=$(echo "${TF_VAR_registration_command}" | sed 's/\"//g')
+    export TF_VAR_registration_command=$(echo "${TF_VAR_registration_command}" | sed 's/ *$//g')
 
     echo -e "\nInitializing Terraform for registering nodes..."
     cd "../${NODEDIR}"
