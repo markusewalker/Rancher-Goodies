@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 # Authored By   : Markus Walker
-# Date Modified : 11/9/23
+# Date Modified : 11/21/23
 
 # Description   : To provision a RKE2/K3S custom cluster using Terraform.
 
@@ -10,14 +10,14 @@ createCluster() {
     cd "${CREATEDIR}"
     terraform init
 
-    echo -e "\nCreating K3S cluster..."
+    echo -e "\nCreating cluster..."
     terraform apply --auto-approve
 
 }
 
 registerNodes() {
-    TF_VAR_registration_command=$(terraform output cluster_registration_token | grep "insecure_node_command" | awk '{$1= ""; $2= ""; print $0}')
-    TF_VAR_registration_command=$(echo "${TF_VAR_registration_command}" | sed 's/\"//g')
+    export TF_VAR_registration_command=$(terraform output cluster_registration_token | grep "insecure_node_command" | awk '{$1= ""; $2= ""; print $0}')
+    export TF_VAR_registration_command=$(echo "${TF_VAR_registration_command}" | sed 's/\"//g')
 
     echo -e "\nInitializing Terraform for registering nodes..."
     cd "../${NODEDIR}"
