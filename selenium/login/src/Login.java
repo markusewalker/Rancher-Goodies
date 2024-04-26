@@ -35,7 +35,7 @@ public class Login {
 
 		driver.manage().window().maximize();
 		
-		String url = "https:/<replace with rancher server url>";
+		String url = "https://<replace with rancher server url>";
 		driver.get(url);
 	}
 	
@@ -44,10 +44,10 @@ public class Login {
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("username")));
 		
 		WebElement search = driver.findElement(By.id("username"));
-		search.sendKeys("admin");
+		search.sendKeys("<user>");
 		
 		search = driver.findElement(By.xpath("//*[@type=\"password\"]"));
-		search.sendKeys("testingrancherout");
+		search.sendKeys("<password>");
 		search.sendKeys(Keys.ENTER);		
 	}
 	
