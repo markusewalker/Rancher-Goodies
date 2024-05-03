@@ -1,4 +1,4 @@
-package rancherselenium;
+package rancherselenium.cloudcredentials;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -13,32 +13,39 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 public class CreateLinodeCloudCredential {
+	public static String CHROMEDRIVER_PATH = "";
+	public static final int TEN_SECONDS = 10;
+	public static String EXPECTED_URL = "";
+	public static String CRED_NAME = "linode-selenium-creds";
+	public static String USERNAME = "";
+	public static String PASSWORD = "";
+	public static String LINODE_TOKEN = "";
+
 	WebDriver driver;
 	WebDriverWait wait;
 	WebElement search;
 	Actions keyboard;
-	
+		
 	@BeforeTest
 	public void setup() throws Exception {
 		ChromeOptions options = new ChromeOptions();
 		options.addArguments("--ignore-certificate-errors");
 		options.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
 		
-		System.setProperty("webdriver.chrome.driver", "<replace with path to chromedriver>");
+		System.setProperty("webdriver.chrome.driver", CHROMEDRIVER_PATH);
 		
 		driver = new ChromeDriver(options);
-		wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-		keyboard = new Actions(driver);
+		wait = new WebDriverWait(driver, Duration.ofSeconds(TEN_SECONDS));
 
 		driver.manage().window().maximize();
 		
-		String url = "https://<replace with rancher server url>";
-		driver.get(url);
+		driver.get(EXPECTED_URL);		
 	}
 	
 	@Test(priority=0, alwaysRun=true, description="Login to the Rancher server")
@@ -46,11 +53,16 @@ public class CreateLinodeCloudCredential {
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("username")));
 		
 		search = driver.findElement(By.id("username"));
-		search.sendKeys("<user>");
+		search.sendKeys(USERNAME);
 		
 		search = driver.findElement(By.xpath("//*[@type=\"password\"]"));
-		search.sendKeys("<password>");
+		search.sendKeys(PASSWORD);
 		search.sendKeys(Keys.ENTER);		
+		
+		String actualTitle = driver.getTitle();
+		String expectedTtle = "Rancher";
+		
+		Assert.assertEquals(expectedTtle, actualTitle);
 	}
 	
 	@Test(priority=1, alwaysRun=true, description="Navigate to cloud credentials page")
@@ -60,10 +72,16 @@ public class CreateLinodeCloudCredential {
 		search = driver.findElement(By.xpath("//*[@href=\"/dashboard/c/_/manager/provisioning.cattle.io.cluster\"]"));
 		search.click();
 		
+		String actualURL = driver.getCurrentUrl();
+		Assert.assertEquals(EXPECTED_URL+"/dashboard/c/_/manager/provisioning.cattle.io.cluster", actualURL);
+		
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@href=\"/dashboard/c/_/manager/cloudCredential\"]")));
 		
 		search = driver.findElement(By.xpath("//*[@href=\"/dashboard/c/_/manager/cloudCredential\"]"));
 		search.click();
+		
+		actualURL = driver.getCurrentUrl();
+		Assert.assertEquals(EXPECTED_URL+"/dashboard/c/_/manager/cloudCredential", actualURL);
 		
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@href=\"/dashboard/c/_/manager/cloudCredential/create\"]")));
 		
@@ -78,24 +96,30 @@ public class CreateLinodeCloudCredential {
 		search = driver.findElement(By.xpath("//span[contains(text(), 'Linode')]"));
 		search.click();
 		
+		String actualURL = driver.getCurrentUrl();
+		Assert.assertEquals(EXPECTED_URL+"/dashboard/c/_/manager/cloudCredential/create?type=linode", actualURL);
+		
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[contains(text(), 'Create')]")));
 		
-		keyboard.sendKeys("linode-selenium-creds").perform();
-		keyboard.sendKeys(Keys.TAB).perform();
-		keyboard.sendKeys(Keys.TAB).perform();
+		this.keyboard = new Actions(driver);
 		
-		keyboard.sendKeys("<replace with cloud credential>").perform();
+		keyboard.sendKeys(CRED_NAME).perform();
+		keyboard.sendKeys(Keys.TAB).perform();
+		keyboard.sendKeys(Keys.TAB).perform();
+		keyboard.sendKeys(LINODE_TOKEN).perform();
 		
 		for (int i = 0; i < 3; i++) {
 			keyboard.sendKeys(Keys.TAB).perform();
 		}
 	
 		keyboard.sendKeys(Keys.ENTER).perform();
+		
+        Assert.assertTrue(driver.getCurrentUrl().contains(EXPECTED_URL+"/dashboard/c/_/manager/cloudCredential"));
 	}
 	
 	@AfterTest
 	public void cleanup() throws InterruptedException {
-		TimeUnit.SECONDS.sleep(10);
+		TimeUnit.SECONDS.sleep(TEN_SECONDS);
 		driver.quit();
 	}
 }
