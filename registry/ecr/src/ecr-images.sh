@@ -43,6 +43,8 @@ createECRRepo() {
 
 saveAndLoadImages() {
     echo -e "\nSaving the images..."
+    sed -i '' 's/echo "Creating/#echo "Creating/g' rancher-save-images.sh
+    sed -i '' 's/docker save/#docker save/g' rancher-save-images.sh
     ./rancher-save-images.sh --image-list ./rancher-images.txt
 
     echo -e "\nTagging the images..."
