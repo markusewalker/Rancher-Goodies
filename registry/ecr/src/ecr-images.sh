@@ -24,11 +24,6 @@ createECRRepo() {
     echo -e "\nDownloading "${RANCHER_VERSION}" image list and scripts..."
     wget https://github.com/rancher/rancher/releases/download/"${RANCHER_VERSION}"/rancher-images.txt
     wget https://github.com/rancher/rancher/releases/download/"${RANCHER_VERSION}"/rancher-save-images.sh
-    
-    echo -e "\nEditing the downloaded scripts..."
-    sed -i '58d' rancher-save-images.sh && \
-    sed -i '76d' rancher-load-images.sh && \
-    chmod +x rancher-save-images.sh && chmod +x rancher-load-images.sh
 
     echo -e "\nCutting the tags from the image names..."
     while read LINE; do
