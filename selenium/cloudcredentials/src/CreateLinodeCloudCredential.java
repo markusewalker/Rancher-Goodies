@@ -68,33 +68,25 @@ public class CreateLinodeCloudCredential {
 	@Test(priority=1, alwaysRun=true, description="Navigate to cloud credentials page")
 	public void navigateToCloudCredential() throws Exception {
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@href=\"/dashboard/c/_/manager/provisioning.cattle.io.cluster\"]")));
-		
-		search = driver.findElement(By.xpath("//*[@href=\"/dashboard/c/_/manager/provisioning.cattle.io.cluster\"]"));
-		search.click();
+		driver.findElement(By.xpath("//*[@href=\"/dashboard/c/_/manager/provisioning.cattle.io.cluster\"]")).click();
 		
 		String actualURL = driver.getCurrentUrl();
 		Assert.assertEquals(EXPECTED_URL+"/dashboard/c/_/manager/provisioning.cattle.io.cluster", actualURL);
 		
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@href=\"/dashboard/c/_/manager/cloudCredential\"]")));
-		
-		search = driver.findElement(By.xpath("//*[@href=\"/dashboard/c/_/manager/cloudCredential\"]"));
-		search.click();
+		driver.findElement(By.xpath("//*[@href=\"/dashboard/c/_/manager/cloudCredential\"]")).click();
 		
 		actualURL = driver.getCurrentUrl();
 		Assert.assertEquals(EXPECTED_URL+"/dashboard/c/_/manager/cloudCredential", actualURL);
 		
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@href=\"/dashboard/c/_/manager/cloudCredential/create\"]")));
-		
-		search = driver.findElement(By.xpath("//*[@href=\"/dashboard/c/_/manager/cloudCredential/create\"]"));
-		search.click();
+		driver.findElement(By.xpath("//*[@href=\"/dashboard/c/_/manager/cloudCredential/create\"]")).click();
 	}
 	
 	@Test(priority=2, alwaysRun=true, description="Create Linode cloud credential")
 	public void createLinodeCloudCredential() throws Exception {
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[contains(text(), 'Linode')]")));
-		
-		search = driver.findElement(By.xpath("//span[contains(text(), 'Linode')]"));
-		search.click();
+		driver.findElement(By.xpath("//span[contains(text(), 'Linode')]")).click();
 		
 		String actualURL = driver.getCurrentUrl();
 		Assert.assertEquals(EXPECTED_URL+"/dashboard/c/_/manager/cloudCredential/create?type=linode", actualURL);
