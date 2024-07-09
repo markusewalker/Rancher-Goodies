@@ -1,7 +1,7 @@
 # Install Rancher - Terraform
 
 ### Description
-Installing Rancher using Terraform. Currently, AWS is the provider used in order to do this.
+Installing Rancher using Terraform. Currently, AWS and Linode are the providers to choose from.
 
 ### Getting Started
 Assuming that `terraform` is already installed on the client machine, follow the following steps:
