@@ -267,7 +267,6 @@ setupControlPlane() {
   yum install -y createrepo > /dev/null 2>&1
   infoOK
 
-  setupHauler
   setupOS
 
   info "Installing RKE2 server..."
@@ -302,14 +301,6 @@ setupControlPlane() {
 
   curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash  > /dev/null 2>&1
   mv /usr/local/bin/helm /usr/bin/helm > /dev/null 2>&1
-
-  echo "------------------------------------------------------------------------------------"
-  echo -e "  Run this command here: $BLUE 'source ~/.bashrc' "$NO_COLOR
-  echo    "  Run this command on the worker nodes:"
-  echo -e "  $0 -w"
-  echo "------------------------------------------------------------------------------------"
-
-  source ~/.bashrc
 }
 
 setupWorker() {
@@ -327,7 +318,9 @@ setupWorker() {
   info "Worker node is added to the cluster!"
 }
 
-rancher() {
+setupRegistry() {
+  setupHauler
+
   warn "- Performing Hauler store sync - will take some time..."
   hauler store sync -f /opt/hauler/airgap_hauler.yaml || { fatal "hauler failed to sync - check airgap_hauler.yaml for errors" ; }
   echo -n "  - Hauler store synced"
@@ -335,6 +328,11 @@ rancher() {
     
   rsync -avP /usr/bin/hauler /opt/hauler/hauler > /dev/null 2>&1
 
+  info "Starting hauler registry..."
+  hauler store serve registry
+}
+
+rancher() {
   ssh -i ${SSH_KEY} ${USER}@${CP_SERVER_IP} "cat /etc/rancher/rke2/rke2.yaml" > /root/.kube/config
   sed -i "s|server: https://127.0.0.1:6443|server: https://${CP_SERVER_IP}:6443|" /root/.kube/config
   
@@ -404,6 +402,10 @@ EXAMPLES OF USAGE:
 
     $ ./$(basename "$0") -w
 
+* Run registry
+  
+      $ ./$(basename "$0") -a
+
 * Run Rancher setup
 
     $ ./$(basename "$0") -r
@@ -424,6 +426,9 @@ while getopts "hbcwr" opt; do
       exit 0;;
     w)
       setupWorker
+      exit 0;;
+    a)
+      setupRegistry
       exit 0;;
     r)
       rancher
