@@ -12,7 +12,9 @@ To utilize this script, you will need to have the following:
     - 2 RKE2 agent RHEL 8.x nodes
     - PEM file to SSH into the nodes
 
-Please follow the below workflow:
+Included are Terraform files for you to be able to easily setup the above, excluding the PEM file. All that is needed is filling out `terraform.tfvars` to your specific needs. Afterwards, simply run `terraform apply`.
+
+Once done, you will need to run the `airgap.sh` script. Please follow the below workflow:
 
 1. Clone the script into your environment.
 2. Make sure the script is executable using the command `chmod +x airgap.sh`.
