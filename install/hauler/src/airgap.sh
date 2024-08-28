@@ -4,8 +4,6 @@ export FQDN=""
 export INTERNAL_FQDN=""
 export REGISTRY_IP=""
 export CP_SERVER_IP=""
-export WORKER1_SERVER_IP=""
-export WORKER2_SERVER_IP=""
 export PATH=$PATH:/usr/local/bin
 export RKE2_VERSION="v1.30.3"
 export CERT_VERSION="v1.15.3"
@@ -18,10 +16,9 @@ export NO_COLOR="\x1B[0m"
 export BOOTSTRAP_PASSWORD=""
 export SSH_KEY=""
 export USER="ec2-user"
-export COMPRESSED_HAULER="hauler_airgap_$(date '+%m_%d_%y').zst"
-export EL_VER=el8
+export RHEL_VERSION=el8
 
-if type rpm > /dev/null 2>&1 ; then export EL=${EL_VER:-$(rpm -q --queryformat '%{RELEASE}' rpm | grep -o "el[[:digit:]]" )} ; fi
+if type rpm > /dev/null 2>&1 ; then export EL=${RHEL_VERSION:-$(rpm -q --queryformat '%{RELEASE}' rpm | grep -o "el[[:digit:]]" )} ; fi
 
 if [ "$1" != "build" ] && [ $(uname) != "Darwin" ] ; then 
     export serverIp=${CP_SERVER_IP:-$(hostname -I | awk '{ print $1 }')}; 
@@ -32,7 +29,7 @@ if [ $(whoami) != "root" ] && ([ "$1" = "control" ] || [ "$1" = "worker" ] || [ 
 fi
 
 build() {
-  info "Installing the following required packages: sudo, openssl, hauler, zstd, rsync, jq, helm, kubectl"
+  info "Installing required packages..."
 
   yum install sudo -y > /dev/null 2>&1
   yum install openssl -y > /dev/null 2>&1
@@ -40,6 +37,7 @@ build() {
   yum install zstd -y > /dev/null 2>&1
   yum install epel-release -y > /dev/null 2>&1
   yum install jq createrepo -y > /dev/null 2>&1
+  yum install docker -y > /dev/null 2>&1
   
   curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash  > /dev/null 2>&1
   curl -sfL https://get.hauler.dev | bash > /dev/null 2>&1
@@ -75,14 +73,12 @@ EOF
   for i in $(helm template jetstack/cert-manager --version $CERT_VERSION | awk '$1 ~ /image:/ {print $2}' | sed 's/\"//g'); do 
     echo "    - name: "$i >> airgap_hauler.yaml
   done
-  
-  for i in $(curl -sL https://github.com/rancher/rke2/releases/download/$RKE2_VERSION%2Brke2r1/rke2-images-all.linux-amd64.txt); do 
-    echo "    - name: "$i >> airgap_hauler.yaml
-  done
 
-  for i in $(curl -sL https://github.com/rancher/rancher/releases/download/$RANCHER_VERSION/rancher-images.txt); do
+  for i in $(curl -sL https://github.com/rancher/rancher/releases/download/${RANCHER_VERSION}/rancher-images.txt); do
     echo "    - name: "$i >> airgap_hauler.yaml
   done
+  
+  sed -i '/windows/d' airgap_hauler.yaml
 
 cat << EOF >> airgap_hauler.yaml
 ---
@@ -105,76 +101,14 @@ metadata:
   name: rancher-files
 spec:
   files:
-    - path: https://github.com/rancher/rke2-packaging/releases/download/v$RKE2_VERSION%2Brke2r1.stable.0/rke2-common-$RKE2_VERSION.rke2r1-0.$EL.x86_64.rpm
-    - path: https://github.com/rancher/rke2-packaging/releases/download/v$RKE2_VERSION%2Brke2r1.stable.0/rke2-agent-$RKE2_VERSION.rke2r1-0.$EL.x86_64.rpm
-    - path: https://github.com/rancher/rke2-packaging/releases/download/v$RKE2_VERSION%2Brke2r1.stable.0/rke2-server-$RKE2_VERSION.rke2r1-0.$EL.x86_64.rpm
+    - path: https://github.com/rancher/rke2-packaging/releases/download/$RKE2_VERSION%2Brke2r1.stable.0/rke2-common-$RKE2_VERSION.rke2r1-0.$EL.x86_64.rpm
+    - path: https://github.com/rancher/rke2-packaging/releases/download/$RKE2_VERSION%2Brke2r1.stable.0/rke2-agent-$RKE2_VERSION.rke2r1-0.$EL.x86_64.rpm
+    - path: https://github.com/rancher/rke2-packaging/releases/download/$RKE2_VERSION%2Brke2r1.stable.0/rke2-server-$RKE2_VERSION.rke2r1-0.$EL.x86_64.rpm
     - path: https://github.com/rancher/rke2-selinux/releases/download/v0.17.stable.1/rke2-selinux-0.17-1.$EL.noarch.rpm
     - path: https://get.helm.sh/helm-$(curl -s https://api.github.com/repos/helm/helm/releases/latest | jq -r .tag_name)-linux-amd64.tar.gz
 EOF
 
     echo -n "  - Created airgap_hauler.yaml"; infoOK
-}
-
-setupHauler() {
-    if [ $(ss -tln | grep "8080\|5000" | wc -l) != 2 ]; then
-        info "Setting up hauler..."
-        curl -sfL https://get.hauler.dev | bash > /dev/null 2>&1 || fatal "Failed to Install Hauler"
-        mv /usr/local/bin/hauler /usr/bin/hauler > /dev/null 2>&1
-
-    tar -I zstd -vxf /opt/hauler/${COMPRESSED_HAULER} -C /opt/hauler > /dev/null 2>&1 || fatal "Failed to unpack hauler store"
-
-cat << EOF > /etc/systemd/system/hauler@.service
-# /etc/systemd/system/hauler.service
-[Unit]
-Description=Hauler Serve %I Service
-
-[Service]
-Environment="HOME=/opt/hauler/"
-ExecStart=/usr/local/bin/hauler store serve %i -s /opt/hauler/store
-WorkingDirectory=/opt/hauler
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    systemctl daemon-reload
-
-    systemctl enable hauler@fileserver > /dev/null 2>&1 
-    systemctl start hauler@fileserver || fatal "hauler fileserver did not start"
-    echo -n " - fileserver started"; infoOK
-
-    mkdir -p /opt/hauler/fileserver
-
-    sleep 30
-
-    systemctl enable hauler@registry > /dev/null 2>&1 
-    systemctl start hauler@registry || fatal "hauler registry did not start"
-    echo -n " - registry started"; infoOK
-
-    sleep 30
-
-    until [ $(ls -1 /opt/hauler/fileserver/ | wc -l) > 9 ]; do 
-        sleep 2
-    done
-    
-    until hauler store info > /dev/null 2>&1; do 
-        sleep 5
-    done
-
-    mkdir -p /opt/hauler/fileserver
-    hauler store info > /opt/hauler/fileserver/_hauler_index.txt || fatal "hauler store is having issues - check /opt/hauler/fileserver/_hauler_index.txt"
-
-  cat << EOF > /opt/hauler/fileserver/hauler.repo
-[hauler]
-name=Hauler Air Gap Server
-baseurl=http://$serverIp:8080
-enabled=1
-gpgcheck=0
-EOF
-  
-    createrepo /opt/hauler/fileserver > /dev/null 2>&1 || fatal "createrepo did not finish correctly, please run manually `createrepo /opt/hauler/fileserver`"
-
-    fi
 }
 
 setupOS() {
@@ -244,11 +178,13 @@ sysctl -p > /dev/null 2>&1
   systemctl disable nm-cloud-setup.service > /dev/null 2>&1
   systemctl disable nm-cloud-setup.timer > /dev/null 2>&1
   systemctl reload NetworkManager > /dev/null 2>&1
+  infoOK
 
   info "Installing base packages..."
   yum install -y zstd iptables container-selinux iptables libnetfilter_conntrack libnfnetlink libnftnl policycoreutils-python-utils cryptsetup iscsi-initiator-utils > /dev/null 2>&1 || fatal "iptables container-selinux iptables libnetfilter_conntrack libnfnetlink libnftnl policycoreutils-python-utils cryptsetup iscsi-initiator-utils packages didn't install"
   systemctl enable --now iscsid > /dev/null 2>&1
   echo -e "[keyfile]\nunmanaged-devices=interface-name:cali*;interface-name:flannel*" > /etc/NetworkManager/conf.d/rke2-canal.conf
+  infoOK
 
   info "Adding hauler repo..."
   curl -sfL http://$serverIp:8080/hauler.repo -o /etc/yum.repos.d/hauler.repo
@@ -257,16 +193,10 @@ sysctl -p > /dev/null 2>&1
   echo -e "mirrors:\n  \"*\":\n    endpoint:\n      - http://$serverIp:5000" > /etc/rancher/rke2/registries.yaml 
 
   yum clean all  > /dev/null 2>&1
+  infoOK
 }
 
 setupControlPlane() {
-  mkdir /opt/hauler
-
-  info "Installing required packages zstd and createrepo..."
-  yum install -y zstd > /dev/null 2>&1
-  yum install -y createrepo > /dev/null 2>&1
-  infoOK
-
   setupOS
 
   info "Installing RKE2 server..."
@@ -296,57 +226,96 @@ setupControlPlane() {
   
   info "RKE2 cluster is active!"
 
-  info "Installing helm..."
-  cd /opt/hauler
+  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" > /dev/null 2>&1
+  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl > /dev/null 2>&1
+  mkdir -p ~/.kube
+  rm kubectl
+  mv /usr/local/bin/kubectl /usr/bin/kubectl > /dev/null 2>&1
 
-  curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash  > /dev/null 2>&1
-  mv /usr/local/bin/helm /usr/bin/helm > /dev/null 2>&1
+  cp /etc/rancher/rke2/rke2.yaml ~/.kube/config
+  kubectl get nodes
 }
 
-setupWorker() {
-  info "Installing required packages zstd and createrepo..."
-  mkdir /opt/hauler && yum install -y zstd > /dev/null 2>&1
-
+setupAgent() {
   setupOS
 
+  info "Installing RKE2 agent..."
   mkdir -p /etc/rancher/rke2/
-  echo -e "server: https://$serverIp:9345\ntoken: ${BOOTSTRAP_PASSWORD}\nwrite-kubeconfig-mode: 0600\n#profile: cis-1.23\nkube-apiserver-arg:\n- \"authorization-mode=RBAC,Node\"\nkubelet-arg:\n- \"protect-kernel-defaults=true\" " > /etc/rancher/rke2/config.yaml
+  echo -e "server: https://$serverIp:9345\ntoken: ${BOOTSTRAP_PASSWORD}\ninsecure-skip-tls-verify: true\nwrite-kubeconfig-mode: 0600\n#profile: cis-1.23\nkube-apiserver-arg:\n- \"authorization-mode=RBAC,Node\"\nkubelet-arg:\n- \"protect-kernel-defaults=true\" " > /etc/rancher/rke2/config.yaml
   
   curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh - > /dev/null 2>&1 || fatal "rke2 agent install didn't work"
   systemctl enable --now rke2-agent.service > /dev/null 2>&1 || fatal "rke2-agent didn't start"
   
-  info "Worker node is added to the cluster!"
+  info "Agent node is added to the cluster!"
 }
 
 setupRegistry() {
-  setupHauler
+  build
 
-  warn "- Performing Hauler store sync - will take some time..."
-  hauler store sync -f /opt/hauler/airgap_hauler.yaml || { fatal "hauler failed to sync - check airgap_hauler.yaml for errors" ; }
-  echo -n "  - Hauler store synced"
-  infoOK
-    
-  rsync -avP /usr/bin/hauler /opt/hauler/hauler > /dev/null 2>&1
-
-  info "Starting hauler registry..."
-  hauler store serve registry
+  echo -e "Run these commands to start the registry server:\n"
+  echo -e "       hauler store sync -f /opt/hauler/airgap_hauler.yaml"
+  echo -e "       hauler store serve registry"
 }
 
 rancher() {
-  ssh -i ${SSH_KEY} ${USER}@${CP_SERVER_IP} "cat /etc/rancher/rke2/rke2.yaml" > /root/.kube/config
+  info "Installing Helm and kubectl..."
+  curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash  > /dev/null 2>&1
+  curl -sfL https://get.hauler.dev | bash > /dev/null 2>&1
+  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" > /dev/null 2>&1
+  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl > /dev/null 2>&1
+  mkdir -p ~/.kube
+  rm kubectl
+
+  mv /usr/local/bin/helm /usr/bin/helm > /dev/null 2>&1
+  mv /usr/local/bin/hauler /usr/bin/hauler > /dev/null 2>&1
+  mv /usr/local/bin/kubectl /usr/bin/kubectl > /dev/null 2>&1
+  infoOK
+
+  ssh -i ${SSH_KEY} ${USER}@${CP_SERVER_IP} "sudo cat /etc/rancher/rke2/rke2.yaml" > /root/.kube/config
   sed -i "s|server: https://127.0.0.1:6443|server: https://${CP_SERVER_IP}:6443|" /root/.kube/config
   
   info "Deploying cert-manager..."
   helm upgrade -i cert-manager oci://${REGISTRY_IP}:5000/hauler/cert-manager --version "${CERT_VERSION}" --namespace cert-manager --create-namespace --set crds.enabled=true --plain-http
+  infoOK
 
-  info "Deploying rancher..."
+  info "Deploying Rancher..."
   helm upgrade -i rancher oci://${REGISTRY_IP}:5000/hauler/rancher --namespace cattle-system --create-namespace --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --set replicas=1 --set auditLog.level=2 --set auditLog.destination=hostPath --set useBundledSystemChart=true --set hostname=${FQDN} --plain-http
+  infoOK
 
   info "Updating ingress..."
   kubectl patch ingress rancher -n cattle-system --type=json -p='[{"op": "add", "path": "/spec/rules/-", "value": {"host": '${INTERNAL_FQDN}',"http":{"paths":[{"backend":{"service":{"name":"rancher","port":{"number":80}}},"pathType":"ImplementationSpecific"}]}}}]'
   kubectl patch ingress rancher -n cattle-system --type=json -p='[{"op": "add", "path": "/spec/tls/0/hosts/-", "value": '${INTERNAL_FQDN}'}]'
-  sleep 20
+  sleep 60
   kubectl patch setting server-url --type=json -p='[{"op": "add", "path": "/value", "value": 'https://${INTERNAL_FQDN}'}]'
+  infoOK
+
+  cat <<EOF
+
+--------------------------------------------------------------
+Instructions to deploy downstream RKE1 clusters
+--------------------------------------------------------------
+When deploying downstream RKE1 clusters, ensure that each node has the following specified in /etc/docker/daemon.json:
+{
+  "insecure-registries": ["${REGISTRY_IP}:5000"]
+}
+
+Then, run the following command: sudo systemctl daemon-reload && sudo systemctl restart docker.
+
+In Rancher, the private registry section should have only the URL section filled out to: ${REGISTRY_IP}:5000
+
+--------------------------------------------------------------
+Instructions to deploy downstream RKE2/K3s clusters
+--------------------------------------------------------------
+When deploying downstream RKE2/K3s clusters, ensure that the YAML looks like the following:
+registries:
+  configs:
+    ${REGISTRY_IP}:
+      insecureSkipVerify: true
+  mirrors:
+    docker.io:
+      endpoint:
+        - http://${REGISTRY_IP}:5000
+EOF
 }
 
 info() { 
@@ -375,8 +344,8 @@ This script will deploy an air-gapped Rancher Server using Hauler on top of an R
 
 following:
 
-    * 5 RHEL VMs - 1 client node, 1 registry, 1 control plane nodes, 2 worker nodes
-    * PEM file to ssh into the control plane and worker nodes
+    * 5 RHEL VMs - 1 client node, 1 registry, 1 control plane nodes, 2 agent nodes
+    * PEM file to ssh into the nodes
     * Run as root
 
 USAGE: % ./$(basename "$0") [options]
@@ -398,7 +367,7 @@ EXAMPLES OF USAGE:
 
     $ ./$(basename "$0") -c
 
-* Run worker node setup
+* Run agent node setup
 
     $ ./$(basename "$0") -w
 
@@ -413,11 +382,11 @@ EXAMPLES OF USAGE:
 EOF
 }
 
-while getopts "hbcwr" opt; do
-  case ${opt} in
-    h)
-      usage
-      exit 0;;
+while getopts "hbcwra" opt; do
+	case ${opt} in
+		h)
+		  usage
+			exit 0;;
     b)
       build
       exit 0;;
@@ -425,7 +394,7 @@ while getopts "hbcwr" opt; do
       setupControlPlane
       exit 0;;
     w)
-      setupWorker
+      setupAgent
       exit 0;;
     a)
       setupRegistry
@@ -434,7 +403,7 @@ while getopts "hbcwr" opt; do
       rancher
       exit 0;;
     *)
-      echo "Invalid option. Valid option(s) are [-h, -b, -c, -w, -r]." 2>&1
+      echo "Invalid option. Valid option(s) are [-h, -b, -c, -w, -r, -a]." 2>&1
       exit 1;;
   esac
 done
