@@ -14,11 +14,12 @@ provider "aws" {
 }
 
 resource "aws_instance" "rke2_server" {
-  ami                    = var.aws_ami
-  instance_type          = var.aws_instance_type
-  key_name               = var.key_name
-  subnet_id              = var.aws_subnet
-  vpc_security_group_ids = [var.aws_security_group]
+  ami                         = var.aws_ami
+  associate_public_ip_address = true
+  instance_type               = var.aws_instance_type
+  key_name                    = var.key_name
+  subnet_id                   = var.aws_subnet
+  vpc_security_group_ids      = [var.aws_security_group]
 
   root_block_device {
     volume_size = var.aws_instance_size
@@ -38,11 +39,12 @@ resource "aws_instance" "rke2_server" {
 }
 
 resource "aws_instance" "rke2_agent1" {
-  ami                    = var.aws_ami
-  instance_type          = var.aws_instance_type
-  key_name               = var.key_name
-  subnet_id              = var.aws_subnet
-  vpc_security_group_ids = [var.aws_security_group]
+  ami                         = var.aws_ami
+  associate_public_ip_address = true
+  instance_type               = var.aws_instance_type
+  key_name                    = var.key_name
+  subnet_id                   = var.aws_subnet
+  vpc_security_group_ids      = [var.aws_security_group]
 
   root_block_device {
     volume_size = var.aws_instance_size
@@ -62,11 +64,12 @@ resource "aws_instance" "rke2_agent1" {
 }
 
 resource "aws_instance" "rke2_agent2" {
-  ami                    = var.aws_ami
-  instance_type          = var.aws_instance_type
-  key_name               = var.key_name
-  subnet_id              = var.aws_subnet
-  vpc_security_group_ids = [var.aws_security_group]
+  ami                         = var.aws_ami
+  associate_public_ip_address = true
+  instance_type               = var.aws_instance_type
+  key_name                    = var.key_name
+  subnet_id                   = var.aws_subnet
+  vpc_security_group_ids      = [var.aws_security_group]
 
   root_block_device {
     volume_size = var.aws_instance_size
@@ -98,30 +101,6 @@ resource "aws_instance" "registry" {
 
   tags = {
     Name = var.aws_registry_prefix
-  }
-
-  connection {
-    type        = var.ssh_connection_type
-    host        = self.public_ip
-    user        = var.aws_user
-    private_key = file(var.ssh_private_key_path)
-    timeout     = var.ssh_timeout
-  }
-}
-
-resource "aws_instance" "client" {
-  ami                    = var.aws_ami
-  instance_type          = var.aws_instance_type
-  key_name               = var.key_name
-  subnet_id              = var.aws_subnet
-  vpc_security_group_ids = [var.aws_security_group]
-
-  root_block_device {
-    volume_size = var.aws_instance_size
-  }
-
-  tags = {
-    Name = var.aws_client_prefix
   }
 
   connection {
