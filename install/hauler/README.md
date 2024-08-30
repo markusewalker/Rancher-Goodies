@@ -7,18 +7,17 @@ Bash script to install an air-gapped Rancher server using the Hauler tool.
 To utilize this script, you will need to have the following:
 
     - 1 client RHEL 8.x node
-    - 1 registry RHEL 8.x node
-    - 1 RKE2 server RHEL 8.x node
-    - 2 RKE2 agent RHEL 8.x nodes
     - PEM file to SSH into the nodes
 
 Included are Terraform files for you to be able to easily setup the above, excluding the PEM file. All that is needed is filling out `terraform.tfvars` to your specific needs. Afterwards, simply run `terraform apply`.
 
+NOTE: This script currently works only with RHEL 8.x machines.
+
 Once done, you will need to run the `airgap.sh` script. Please follow the below workflow:
 
 1. Clone the script into your environment.
-2. Make sure the script is executable using the command `chmod +x airgap.sh`.
-3. Navigate to the src folder and run the script to view the usage: `./airgap.sh`.
-4. Fill out the environmental variables based upon your specifics.
-
-Currently, you will need to run the script with the appropriate flag on each of the nodes. An enhancement to run this from only one node is being further looked at in the near future.
+3. Navigate to the src folder.
+3. Fill out the appropriate variables found in the `airgap.sh` script.
+4. Run `./airgap.sh`. This will kick off the Terraform infrastructure to create the following:
+     - Registry node, RKE2 server, 2 agent nodes, AWS 53 record, load balancer and target groups
+5. Upon completion of the script, you will have a functioning Rancher environment. You will need to drop the public IP address in AWS.
