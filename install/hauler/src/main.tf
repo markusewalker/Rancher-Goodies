@@ -96,7 +96,7 @@ resource "aws_instance" "registry" {
   vpc_security_group_ids = [var.aws_security_group]
 
   root_block_device {
-    volume_size = var.aws_instance_size
+    volume_size = var.aws_registry_size
   }
 
   tags = {

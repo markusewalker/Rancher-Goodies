@@ -39,6 +39,11 @@ variable "aws_instance_size" {
   description = "Defines the AWS instance size to be used"
 }
 
+variable "aws_registry_size" {
+  type        = number
+  description = "Defines the AWS registry size to be used"
+}
+
 variable "aws_prefix" {
   type        = string
   description = "Defines the AWS prefix to be used"
