@@ -6,6 +6,7 @@ aws_instance_type    = "t3.2xlarge"
 aws_subnet           = ""
 aws_security_group   = ""
 aws_instance_size    = 100
+aws_registry_size    = 500
 aws_prefix           = ""
 aws_server_prefix    = ""
 aws_agent1_prefix    = ""

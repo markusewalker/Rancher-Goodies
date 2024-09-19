@@ -3,13 +3,15 @@
 export FQDN=""
 export INTERNAL_FQDN=""
 export PATH=$PATH:/usr/local/bin
-export RKE2_VERSION="v1.30.3"
+export RKE2_VERSION="v1.30.4"
 export CERT_VERSION="v1.15.3"
-export RANCHER_VERSION="v2.9.0"
+export RANCHER_VERSION="v2.9.1"
 export BOOTSTRAP_PASSWORD=""
 export SSH_KEY=""
 export USER="ec2-user"
 export RHEL_VERSION=el8
+export REPO_URL="https://releases.rancher.com/server-charts/latest"
+export RANCHER_IMAGES_URL="https://github.com/rancher/rancher/releases/download/${RANCHER_VERSION}/rancher-images.txt"
 
 if [ "${EUID}" -ne 0 ]; then
   echo -e "\nPlease run as the root user!"
@@ -17,6 +19,11 @@ if [ "${EUID}" -ne 0 ]; then
 fi
 
 if type rpm > /dev/null 2>&1 ; then export EL=${RHEL_VERSION:-$(rpm -q --queryformat '%{RELEASE}' rpm | grep -o "el[[:digit:]]" )} ; fi
+
+echo -e "\nInstalling Terraform..."
+sudo yum install -y yum-utils > /dev/null 2>&1
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo > /dev/null 2>&1
+sudo yum -y install terraform > /dev/null 2>&1
 
 echo -e "Running terraform init..."
 terraform init > /dev/null 2>&1
@@ -76,13 +83,16 @@ setupControlPlane() {
   echo -e "\nSetting up the OS in the control plane node..."
   setupOSFunction=$(declare -f setupOS)
   runSSH "${CP_SERVER_FQDN}" "${setupOSFunction}; setupOS"
+
+  echo -e "\nAdding RKE2 RPM in the control plane node..."
+  setupRKE2RPMFunction=$(declare -f setupRKE2RPM)
+  runSSH "${CP_SERVER_FQDN}" "${setupRKE2RPMFunction}; setupRKE2RPM"
     
   echo -e "\nSSH'ing into the control plane node..."
   echo -e "\nSetting up RKE2 server..."
   runSSH "${CP_SERVER_FQDN}" "sudo useradd -r -c 'etcd user' -s /sbin/nologin -M etcd -U > /dev/null 2>&1"
     
-  runSSH "${CP_SERVER_FQDN}" "sudo mkdir -p /etc/rancher/rke2/ /var/lib/rancher/rke2/server/manifests/ /var/lib/rancher/rke2/agent/images"
-  runSSH "${CP_SERVER_FQDN}" "curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=${RKE2_VERSION} sudo sh - > /dev/null 2>&1"
+  runSSH "${CP_SERVER_FQDN}" "sudo yum install rke2-server -y > /dev/null 2>&1"
   runSSH "${CP_SERVER_FQDN}" "sudo systemctl enable rke2-server > /dev/null 2>&1"
   runSSH "${CP_SERVER_FQDN}" "sudo systemctl start rke2-server > /dev/null 2>&1"
 
@@ -183,7 +193,7 @@ EOF"
     echo "    - name: "$i >> /opt/hauler/airgap_hauler.yaml
   done"
 
-  runSSH "${REGISTRY_FQDN}" "curl -sL https://github.com/rancher/rancher/releases/download/${RANCHER_VERSION}/rancher-images.txt | while read -r i; do
+  runSSH "${REGISTRY_FQDN}" "curl -sL ${RANCHER_IMAGES_URL} | while read -r i; do
     echo \"    - name: \"\$i >> /opt/hauler/airgap_hauler.yaml
   done"
   
@@ -198,7 +208,7 @@ metadata:
 spec:
   charts:
     - name: rancher
-      repoURL: https://releases.rancher.com/server-charts/latest
+      repoURL: $REPO_URL
       version: $RANCHER_VERSION
     - name: cert-manager
       repoURL: https://charts.jetstack.io
@@ -230,11 +240,20 @@ EOF"
 
 rancher() {   
   echo -e "\nDeploying cert-manager..."
-  helm upgrade -i cert-manager oci://${REGISTRY_FQDN}:5000/hauler/cert-manager --version "${CERT_VERSION}" --namespace cert-manager --create-namespace --set crds.enabled=true --plain-http
+  helm upgrade -i cert-manager oci://${REGISTRY_FQDN}:5000/hauler/cert-manager --version "${CERT_VERSION}" \
+                                                                               --namespace cert-manager \
+                                                                               --create-namespace \
+                                                                               --set crds.enabled=true \
+                                                                               --plain-http
     
   echo -e "\nDeploying Rancher..."
-  helm upgrade -i rancher oci://${REGISTRY_FQDN}:5000/hauler/rancher --namespace cattle-system --create-namespace --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --set replicas=1 --set auditLog.level=2 --set auditLog.destination=hostPath --set useBundledSystemChart=true --set hostname=${FQDN} --plain-http
-    
+  helm upgrade -i rancher oci://${REGISTRY_FQDN}:5000/hauler/rancher --namespace cattle-system \
+                                                                     --create-namespace \
+                                                                     --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
+                                                                     --set useBundledSystemChart=true \
+                                                                     --set hostname=${FQDN} \
+                                                                     --plain-http
+      
   echo -e "\nUpdating ingress..."
   kubectl patch ingress rancher -n cattle-system --type=json -p='[{"op": "add", "path": "/spec/rules/-", "value": {"host": '${INTERNAL_FQDN}',"http":{"paths":[{"backend":{"service":{"name":"rancher","port":{"number":80}}},"pathType":"ImplementationSpecific"}]}}}]'
   kubectl patch ingress rancher -n cattle-system --type=json -p='[{"op": "add", "path": "/spec/tls/0/hosts/-", "value": '${INTERNAL_FQDN}'}]'
@@ -285,7 +304,7 @@ runSSHOutput() {
 }
 
 setupRKE2RPM() {
-  export RKE2_MINOR="30"
+  export RKE2_MINOR="28"
   export LINUX_MAJOR="8"
 
   sudo tee /etc/yum.repos.d/rancher-rke2-1-${RKE2_MINOR}-latest.repo > /dev/null << EOF
@@ -400,12 +419,12 @@ EOF
 
 while getopts "h" opt; do
 	case ${opt} in
-    h)
-      usage
-      exit 0;;
+		h)
+		  usage
+			exit 0;;
     *)
       echo "Invalid option. Valid option(s) are [-h]." 2>&1
-      exit 1;;
+			exit 1;;
   esac
 done
 
