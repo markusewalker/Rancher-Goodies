@@ -10,7 +10,7 @@ createCluster() {
     cd "${CREATEDIR}"
     terraform init
 
-    echo -e "\nCreating K3S cluster..."
+    echo -e "\nCreating RKE1 cluster..."
     terraform apply --auto-approve
 
 }

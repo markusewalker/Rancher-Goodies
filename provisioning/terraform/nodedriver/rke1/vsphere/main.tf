@@ -2,7 +2,7 @@ terraform {
   required_providers {
     rancher2 = {
       source  = "rancher/rancher2"
-      version = "3.2.0"
+      version = "5.0.0"
     }
   }
 }
@@ -13,9 +13,19 @@ provider "rancher2" {
   insecure  = true
 }
 
-########################
-# CREATE RKE1 CLUSTER
-########################
+resource "rancher2_user" "user" {
+  name     = var.username
+  username = var.username
+  password = var.password
+  enabled  = true
+}
+
+resource "rancher2_global_role_binding" "global_role_binding" {
+  name           = var.username
+  global_role_id = var.global_role_id
+  user_id        = rancher2_user.user.id
+}
+
 resource "rancher2_cluster" "cluster" {
   name                                                       = var.cluster_name
   default_pod_security_admission_configuration_template_name = var.default_pod_security_admission_configuration_template_name
@@ -27,32 +37,40 @@ resource "rancher2_cluster" "cluster" {
   }
 }
 
-########################
-# CREATE NODE TEMPLATE
-########################
 resource "rancher2_node_template" "node_template" {
   name = var.node_template_name
-  amazonec2_config {
-    access_key     = var.aws_access_key
-    secret_key     = var.aws_secret_key
-    ami            = var.aws_ami
-    region         = var.aws_region
-    security_group = [var.aws_security_group_name]
-    subnet_id      = var.aws_subnet_id
-    vpc_id         = var.aws_vpc_id
-    zone           = var.aws_zone
-    root_size      = var.aws_root_size
-    instance_type  = var.aws_instance_type
+  vsphere_config {
+    boot2docker_url   = var.vsphere_boot2docker_url
+    cfgparam          = [var.vsphere_cfgparam]
+    clone_from        = var.vsphere_clone_from
+    cloud_config      = var.vsphere_cloud_config
+    cloudinit         = var.vsphere_cloudinit
+    content_library   = var.vsphere_content_library
+    cpu_count         = var.vsphere_cpu_count
+    datacenter        = var.vsphere_datacenter
+    datastore         = var.vsphere_datastore
+    datastore_cluster = var.vsphere_datastore_cluster
+    disk_size         = var.vsphere_disk_size
+    folder            = var.vsphere_folder
+    hostsystem        = var.vsphere_hostsystem
+    memory_size       = var.vsphere_memory_size
+    network           = [var.vsphere_network]
+    password          = var.vsphere_password
+    pool              = var.vsphere_pool
+    ssh_password      = var.vsphere_ssh_password
+    ssh_port          = var.vsphere_ssh_port
+    ssh_user          = var.vsphere_ssh_user
+    ssh_user_group    = var.vsphere_ssh_user_group
+    username          = var.vsphere_username
+    vcenter           = var.vsphere_vcenter
+    vcenter_port      = var.vsphere_vcenter_port
   }
 }
 
-########################
-# CREATE ETCD NODE POOL
-########################
 resource "rancher2_node_pool" "etcd_node_pool" {
   cluster_id       = rancher2_cluster.cluster.id
   name             = var.etcd_node_pool_name
-  hostname_prefix  = var.node_hostname_prefix
+  hostname_prefix  = var.etcd_node_hostname_prefix
   node_template_id = rancher2_node_template.node_template.id
   quantity         = var.etcd_node_pool_quantity
   control_plane    = false
@@ -60,13 +78,10 @@ resource "rancher2_node_pool" "etcd_node_pool" {
   worker           = false
 }
 
-########################
-# CREATE CP NODE POOL
-########################
 resource "rancher2_node_pool" "control_plane_node_pool" {
   cluster_id       = rancher2_cluster.cluster.id
   name             = var.control_plane_node_pool_name
-  hostname_prefix  = var.node_hostname_prefix
+  hostname_prefix  = var.control_plane_node_hostname_prefix
   node_template_id = rancher2_node_template.node_template.id
   quantity         = var.control_plane_node_pool_quantity
   control_plane    = true
@@ -74,13 +89,10 @@ resource "rancher2_node_pool" "control_plane_node_pool" {
   worker           = false
 }
 
-########################
-# CREATE WORKER NODE POOL
-########################
 resource "rancher2_node_pool" "worker_node_pool" {
   cluster_id       = rancher2_cluster.cluster.id
   name             = var.worker_node_pool_name
-  hostname_prefix  = var.node_hostname_prefix
+  hostname_prefix  = var.worker_node_hostname_prefix
   node_template_id = rancher2_node_template.node_template.id
   quantity         = var.worker_node_pool_quantity
   control_plane    = false

@@ -8,54 +8,39 @@ variable "rancher_admin_bearer_token" {
   description = "Admin bearer token"
 }
 
-variable "aws_access_key" {
+variable "username" {
   type        = string
-  description = "AWS access key"
+  description = "Username"
 }
 
-variable "aws_secret_key" {
+variable "password" {
   type        = string
-  description = "AWS secret key"
+  description = "Password"
 }
 
-variable "aws_ami" {
+variable "global_role_id" {
   type        = string
-  description = "AWS AMI"
+  description = "Global role ID"
 }
 
-variable "aws_instance_type" {
+variable "linode_token" {
   type        = string
-  description = "AWS instance type"
+  description = "Linode token"
 }
 
-variable "aws_region" {
+variable "linode_image" {
   type        = string
-  description = "AWS region"
+  description = "Image"
 }
 
-variable "aws_security_group_name" {
+variable "linode_region" {
   type        = string
-  description = "AWS security group name"
+  description = "Region"
 }
 
-variable "aws_subnet_id" {
+variable "linode_root_password" {
   type        = string
-  description = "AWS subnet ID"
-}
-
-variable "aws_vpc_id" {
-  type        = string
-  description = "AWS VPC ID"
-}
-
-variable "aws_zone" {
-  type        = string
-  description = "AWS zone"
-}
-
-variable "aws_root_size" {
-  type        = number
-  description = "AWS root size"
+  description = "Root password"
 }
 
 variable "cluster_name" {
@@ -103,9 +88,19 @@ variable "worker_node_pool_quantity" {
   description = "Worker node pool quantity"
 }
 
-variable "node_hostname_prefix" {
+variable "etcd_node_hostname_prefix" {
   type        = string
-  description = "Node hostname prefix"
+  description = "Etcd node hostname prefix"
+}
+
+variable "control_plane_node_hostname_prefix" {
+  type        = string
+  description = "Control plane node hostname prefix"
+}
+
+variable "worker_node_hostname_prefix" {
+  type        = string
+  description = "Worker node hostname prefix"
 }
 
 variable "kubernetes_version" {

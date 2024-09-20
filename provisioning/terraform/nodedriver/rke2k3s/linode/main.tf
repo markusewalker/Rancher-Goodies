@@ -2,7 +2,7 @@ terraform {
   required_providers {
     rancher2 = {
       source  = "rancher/rancher2"
-      version = "3.2.0"
+      version = "5.0.0"
     }
   }
 }
@@ -13,35 +13,35 @@ provider "rancher2" {
   insecure  = true
 }
 
-########################
-# CLOUD CREDENTIALS
-########################
+resource "rancher2_user" "user" {
+  name     = var.username
+  username = var.username
+  password = var.password
+  enabled  = true
+}
+
+resource "rancher2_global_role_binding" "global_role_binding" {
+  name           = var.username
+  global_role_id = var.global_role_id
+  user_id        = rancher2_user.user.id
+}
+
 resource "rancher2_cloud_credential" "cloud_credential" {
   name = var.cloud_credential_name
-  amazonec2_credential_config {
-    access_key = var.aws_access_key
-    secret_key = var.aws_secret_key
+  linode_credential_config {
+    token = var.linode_token
   }
 }
 
-########################
-# MACHINE CONFIG
-########################
 resource "rancher2_machine_config_v2" "machine_config" {
   generate_name = var.machine_config_name
-  amazonec2_config {
-    ami            = var.ami
-    region         = var.region
-    security_group = [var.security_group]
-    subnet_id      = var.subnet_id
-    vpc_id         = var.vpc_id
-    zone           = var.zone
+  linode_config {
+    image     = var.linode_image
+    region    = var.linode_region
+    root_pass = var.linode_root_password
   }
 }
 
-########################
-# CREATE CLUSTER
-########################
 resource "rancher2_cluster_v2" "cluster" {
   name                                                       = var.cluster_name
   kubernetes_version                                         = var.kubernetes_version

@@ -1,11 +1,26 @@
 variable "rancher_api_url" {
   type        = string
-  description = "Rancher URL"
+  description = "Rancher API URL"
 }
 
 variable "rancher_admin_bearer_token" {
   type        = string
   description = "Admin token"
+}
+
+variable "username" {
+  type        = string
+  description = "Username"
+}
+
+variable "password" {
+  type        = string
+  description = "Password"
+}
+
+variable "global_role_id" {
+  type        = string
+  description = "Global role ID"
 }
 
 variable "aws_access_key" {
@@ -75,33 +90,34 @@ variable "default_pod_security_admission_configuration_template_name" {
 
 variable "machine_pool_etcd_name" {
   type        = string
-  description = "Machine pool etcd name"
-}
-
-variable "machine_pool_etcd_quantity" {
-  type        = number
-  description = "Machine pool etcd quantity"
+  description = "Etcd pool name"
 }
 
 variable "machine_pool_control_plane_name" {
   type        = string
-  description = "Machine pool control plane name"
-}
-
-variable "machine_pool_control_plane_quantity" {
-  type        = number
-  description = "Machine pool control plane quantity"
+  description = "Control plane pool name"
 }
 
 variable "machine_pool_worker_name" {
   type        = string
-  description = "Machine pool worker name"
+  description = "Worker pool name"
+}
+
+variable "machine_pool_etcd_quantity" {
+  type        = number
+  description = "Etcd pool quantity"
+}
+
+variable "machine_pool_control_plane_quantity" {
+  type        = number
+  description = "Control plane pool quantity"
 }
 
 variable "machine_pool_worker_quantity" {
   type        = number
-  description = "Machine pool worker quantity"
+  description = "Worker pool quantity"
 }
+
 
 variable "cloud_credential_name" {
   type        = string

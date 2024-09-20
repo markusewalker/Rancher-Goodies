@@ -1,7 +1,7 @@
 # Provision RKE2/K3S Node Driver Cluster - Terraform
 
 ### Description
-Provisioning a RKE2/K3S node driver cluster using Terraform. Currently, AWS is the provider used in order to do this.
+Provisioning a RKE2/K3S node driver cluster using Terraform. Supported node drivers include: AWS, Azure, Linode and vSphere.
 
 ### Getting Started
 Assuming that `terraform` is already installed on the client machine, follow the following steps:

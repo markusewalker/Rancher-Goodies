@@ -1,19 +1,8 @@
-########################
-# RANCHER VARIABLES
-########################
 rancher_api_url            = ""
 rancher_admin_bearer_token = ""
-
-########################
-# AZURE VARIABLES
-########################
-client_id       = ""
-client_secret   = ""
-subscription_id = ""
-
-########################
-# AKS VARIABLES
-########################
+client_id                  = ""
+client_secret              = ""
+subscription_id            = ""
 cloud_credential_name      = ""
 cluster_name               = ""
 resource_group             = ""
