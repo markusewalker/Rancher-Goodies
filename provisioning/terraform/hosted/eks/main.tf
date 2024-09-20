@@ -2,7 +2,7 @@ terraform {
   required_providers {
     rancher2 = {
       source  = "rancher/rancher2"
-      version = "3.2.0"
+      version = "5.0.0"
     }
   }
 }
@@ -13,9 +13,6 @@ provider "rancher2" {
   insecure  = true
 }
 
-########################
-# CLOUD CREDENTIALS
-########################
 resource "rancher2_cloud_credential" "cloud_credential" {
   name = var.cloud_credential_name
   amazonec2_credential_config {
@@ -24,9 +21,6 @@ resource "rancher2_cloud_credential" "cloud_credential" {
   }
 }
 
-########################
-# EKS CLUSTER
-########################
 resource "rancher2_cluster" "cluster" {
   name = var.cluster_name
   eks_config_v2 {
