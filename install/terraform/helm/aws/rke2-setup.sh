@@ -2,10 +2,9 @@
 
 export FQDN=""
 export PATH=$PATH:/usr/local/bin
-export RKE2_VERSION="v1.30.4"
+export RKE2_VERSION="v1.30.5+rke2r1"
 export CERT_VERSION="v1.15.3"
 export RANCHER_VERSION="v2.9-head"
-export BOOTSTRAP_PASSWORD=""
 export SSH_KEY=""
 export PEM=""
 export USER="ec2-user"
@@ -36,13 +35,15 @@ setupControlPlane() {
   runSSH "${CP_SERVER_FQDN}" "sudo useradd -r -c 'etcd user' -s /sbin/nologin -M etcd -U > /dev/null 2>&1"
     
   runSSH "${CP_SERVER_FQDN}" "sudo mkdir -p /etc/rancher/rke2/ /var/lib/rancher/rke2/server/manifests/ /var/lib/rancher/rke2/agent/images"
-  runSSH "${CP_SERVER_FQDN}" "curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=${RKE2_VERSION} sudo sh - > /dev/null 2>&1"
+  runSSH "${CP_SERVER_FQDN}" "curl -sfL https://get.rke2.io --output install.sh > /dev/null 2>&1"
+  runSSH "${CP_SERVER_FQDN}" "sudo chmod +x install.sh > /dev/null 2>&1"
+  runSSH "${CP_SERVER_FQDN}" "INSTALL_RKE2_VERSION=${RKE2_VERSION} INSTALL_RKE2_TYPE='server' sudo ./install.sh > /dev/null 2>&1"
   runSSH "${CP_SERVER_FQDN}" "sudo systemctl enable rke2-server > /dev/null 2>&1"
   runSSH "${CP_SERVER_FQDN}" "sudo systemctl start rke2-server > /dev/null 2>&1"
 
-  echo -e "\nWaiting 2 minutes for the RKE2 server to start..."
+  echo -e "\nWaiting 1 minute for the RKE2 server to start..."
 
-  runSSH "${CP_SERVER_FQDN}" "sleep 120"
+  runSSH "${CP_SERVER_FQDN}" "sleep 60"
     
   runSSH "${CP_SERVER_FQDN}" "sudo curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl > /dev/null 2>&1""
   runSSH "${CP_SERVER_FQDN}" "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl"
@@ -62,7 +63,9 @@ setupAgent() {
     
   echo -e "\nSSH'ing into agent node 1..."
   echo -e "\nSetting up RKE2 agent 1..."
-  runSSH "${AGENT_NODE1_FQDN}" "curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=${RKE2_VERSION} INSTALL_RKE2_TYPE='agent' sudo sh -"
+  runSSH "${AGENT_NODE1_FQDN}" "curl -sfL https://get.rke2.io --output install.sh > /dev/null 2>&1"
+  runSSH "${AGENT_NODE1_FQDN}" "chmod +x install.sh > /dev/null 2>&1"
+  runSSH "${AGENT_NODE1_FQDN}" "INSTALL_RKE2_VERSION=${RKE2_VERSION} INSTALL_RKE2_TYPE='agent' sudo ./install.sh > /dev/null 2>&1"
   runSSH "${AGENT_NODE1_FQDN}" "sudo systemctl enable rke2-agent > /dev/null 2>&1"
   runSSH "${AGENT_NODE1_FQDN}" "sudo mkdir -p /etc/rancher/rke2/"
 
@@ -74,7 +77,9 @@ setupAgent() {
     
   echo -e "\nSSH'ing into agent node 2..."
   echo -e "\nSetting up RKE2 agent 2..."
-  runSSH "${AGENT_NODE2_FQDN}" "curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=${RKE2_VERSION} INSTALL_RKE2_TYPE='agent' sudo sh -"
+  runSSH "${AGENT_NODE2_FQDN}" "curl -sfL https://get.rke2.io --output install.sh > /dev/null 2>&1"
+  runSSH "${AGENT_NODE2_FQDN}" "chmod +x install.sh > /dev/null 2>&1"
+  runSSH "${AGENT_NODE2_FQDN}" "INSTALL_RKE2_VERSION=${RKE2_VERSION} INSTALL_RKE2_TYPE='agent' sudo ./install.sh > /dev/null 2>&1"
   runSSH "${AGENT_NODE2_FQDN}" "sudo systemctl enable rke2-agent > /dev/null 2>&1"
   runSSH "${AGENT_NODE2_FQDN}" "sudo mkdir -p /etc/rancher/rke2/"
 
