@@ -38,7 +38,7 @@ resource "aws_instance" "rke2_client" {
   }
 }
 
-resource "aws_instance" "rke2_server" {
+resource "aws_instance" "rke2_server1" {
   ami                         = var.aws_ami
   associate_public_ip_address = true
   instance_type               = var.aws_instance_type
@@ -51,7 +51,7 @@ resource "aws_instance" "rke2_server" {
   }
 
   tags = {
-    Name = var.aws_server_prefix
+    Name = var.aws_server1_prefix
   }
 
   connection {
@@ -63,7 +63,7 @@ resource "aws_instance" "rke2_server" {
   }
 }
 
-resource "aws_instance" "rke2_agent1" {
+resource "aws_instance" "rke2_server2" {
   ami                         = var.aws_ami
   associate_public_ip_address = true
   instance_type               = var.aws_instance_type
@@ -76,7 +76,7 @@ resource "aws_instance" "rke2_agent1" {
   }
 
   tags = {
-    Name = var.aws_agent1_prefix
+    Name = var.aws_server2_prefix
   }
 
   connection {
@@ -88,7 +88,7 @@ resource "aws_instance" "rke2_agent1" {
   }
 }
 
-resource "aws_instance" "rke2_agent2" {
+resource "aws_instance" "rke2_server3" {
   ami                         = var.aws_ami
   associate_public_ip_address = true
   instance_type               = var.aws_instance_type
@@ -101,7 +101,7 @@ resource "aws_instance" "rke2_agent2" {
   }
 
   tags = {
-    Name = var.aws_agent2_prefix
+    Name = var.aws_server3_prefix
   }
 
   connection {
@@ -115,9 +115,9 @@ resource "aws_instance" "rke2_agent2" {
 
 locals {
   rke2_instance_ids = {
-    rke2_server = aws_instance.rke2_server.id,
-    rke2_agent1 = aws_instance.rke2_agent1.id,
-    rke2_agent2 = aws_instance.rke2_agent2.id
+    rke2_server1 = aws_instance.rke2_server1.id,
+    rke2_server2 = aws_instance.rke2_server2.id,
+    rke2_server3 = aws_instance.rke2_server3.id
   }
 }
 

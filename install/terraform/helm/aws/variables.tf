@@ -49,19 +49,19 @@ variable "aws_client_prefix" {
   description = "Defines the AWS client prefix to be used"
 }
 
-variable "aws_server_prefix" {
+variable "aws_server1_prefix" {
   type        = string
-  description = "Defines the AWS server prefix to be used"
+  description = "Defines the AWS server 1 prefix to be used"
 }
 
-variable "aws_agent1_prefix" {
+variable "aws_server2_prefix" {
   type        = string
-  description = "Defines the AWS agent1 prefix to be used"
+  description = "Defines the AWS server 2 prefix to be used"
 }
 
-variable "aws_agent2_prefix" {
+variable "aws_server3_prefix" {
   type        = string
-  description = "Defines the AWS agent2 prefix to be used"
+  description = "Defines the AWS server 3 prefix to be used"
 }
 
 variable "aws_user" {
